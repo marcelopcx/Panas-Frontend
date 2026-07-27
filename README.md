@@ -4,7 +4,7 @@
 
 Arquitectura desacoplada:
 
-* **React Native** con **Expo** (Expo Router)
+* **React Native** con **Expo** (Expo Router, SDK 54 — compatible con Expo Go de Play Store / App Store)
 * Backend en Rust (Actix + PostgreSQL): **[Panas — Backend](https://github.com/marcelopcx/Panas-Backend)**
 
 ---

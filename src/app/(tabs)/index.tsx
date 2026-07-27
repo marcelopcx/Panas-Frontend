@@ -7,7 +7,7 @@ export default function TabOneScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Panas</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <Text style={styles.subtitle}>React Native + Expo</Text>
+      <Text style={styles.subtitle}>React Native + Expo (SDK 54)</Text>
       <Text style={styles.hint}>Estructura base lista para desarrollar.</Text>
     </View>
   );

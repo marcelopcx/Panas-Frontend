@@ -4,12 +4,12 @@
     "slug": "panas",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/background.avif",
     "scheme": "panas",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/background.avif",
       "resizeMode": "contain",
       "backgroundColor": "#1a1a2e"
     },
@@ -19,7 +19,7 @@
     "android": {
       "package": "com.panas.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/background.avif",
         "backgroundColor": "#1a1a2e"
       },
       "edgeToEdgeEnabled": true,
@@ -28,11 +28,9 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/background.avif"
     },
-    "plugins": [
-      "expo-router"
-    ],
+    "plugins": ["expo-router"],
     "expo-router": {
       "appRoot": "src/app"
     },

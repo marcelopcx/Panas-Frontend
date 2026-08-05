@@ -8,6 +8,8 @@ import { CustomInput } from "@/components/CustomInput/CustomInput";
 import { Header } from "@/components/Header/Header";
 import { NotificationDropdown } from "@/components/NotificationDropdown/NotificationDropdown";
 import { Text, View } from "@/components/Themed";
+import { useAppTheme } from "@/providers/AppThemeProvider";
+import Colors from "@/constants/Colors";
 
 const FONT_SEMIBOLD = "AlbertSans_600SemiBold";
 const FONT_REGULAR = "AlbertSans_400Regular";
@@ -110,6 +112,9 @@ export default function ChatsScreen() {
   const router = useRouter();
   const [chats] = useState<Chat[]>(CHATS_DATA);
   const [notifVisible, setNotifVisible] = useState(false);
+  const { colorScheme } = useAppTheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
 
   const toggleNotif = () => {
     setNotifVisible((prev) => !prev);
@@ -147,14 +152,14 @@ export default function ChatsScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
         logoSource={require("../../../assets/images/logo blue.png")}
         onNotificationPress={toggleNotif}
       />
       <NotificationDropdown visible={notifVisible} onClose={closeNotif} />
 
-      <View style={styles.contentInput}>
+      <View style={[styles.contentInput, { backgroundColor: colors.background }]}>
         <CustomInput type="search" placeholder="Buscar chats..." />
       </View>
 
@@ -168,12 +173,12 @@ export default function ChatsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <View style={styles.iconCircle}>
-              <FontAwesome name="comment-o" size={36} color="#94A3B8" />
+          <View style={[styles.emptyContainer, { backgroundColor: colors.background }]}>
+            <View style={[styles.iconCircle, { backgroundColor: colors.iconCircle }]}>
+              <FontAwesome name="comment-o" size={36} color={colors.tabIconDefault} />
             </View>
-            <Text style={styles.emptyTitle}>No hay chats aún</Text>
-            <Text style={styles.emptySubtitle}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>No hay chats aún</Text>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
               Inicia una conversación para empezar.
             </Text>
           </View>
@@ -186,11 +191,9 @@ export default function ChatsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   contentInput: {
     paddingHorizontal: 8,
-    backgroundColor: "#fff",
   },
   list: {
     paddingTop: 8,
@@ -204,13 +207,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 32,
-    backgroundColor: "#fff",
   },
   iconCircle: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: "#F1F3F5",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
@@ -218,7 +219,6 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontFamily: FONT_SEMIBOLD,
-    color: "#1E293B",
     marginBottom: 6,
     textAlign: "center",
     fontWeight: "700",
@@ -226,7 +226,6 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     fontSize: 14,
     fontFamily: FONT_REGULAR,
-    color: "#64748B",
     textAlign: "center",
     lineHeight: 20,
     marginBottom: 16,

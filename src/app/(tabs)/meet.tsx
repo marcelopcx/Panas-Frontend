@@ -6,6 +6,8 @@ import { CardUser, UserProfile } from "@/components/CardUser/CardUser";
 import { Header } from "@/components/Header/Header";
 import { NotificationDropdown } from "@/components/NotificationDropdown/NotificationDropdown";
 import { Text } from "@/components/Themed";
+import { useAppTheme } from "@/providers/AppThemeProvider";
+import Colors from "@/constants/Colors";
 
 const FONT_SEMIBOLD = "AlbertSans_600SemiBold";
 const FONT_REGULAR = "AlbertSans_400Regular";
@@ -31,6 +33,9 @@ const PEOPLE_DATA: UserProfile[] = [
 export default function MeetScreen() {
   const [people, setPeople] = useState<UserProfile[]>(PEOPLE_DATA);
   const [notifVisible, setNotifVisible] = useState(false);
+  const { colorScheme } = useAppTheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
 
   const toggleNotif = () => {
     setNotifVisible((prev) => !prev);
@@ -55,7 +60,7 @@ export default function MeetScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
         logoSource={require("../../../assets/images/logo blue.png")}
         onNotificationPress={toggleNotif}
@@ -65,8 +70,8 @@ export default function MeetScreen() {
       <View style={styles.contentContainer}>
         {people.length > 0 && (
           <View style={styles.heroContainer}>
-            <Text style={styles.heroTitle}>Conoce gente nueva</Text>
-            <Text style={styles.heroSubtitle}>
+            <Text style={[styles.heroTitle, { color: colors.text }]}>Conoce gente nueva</Text>
+            <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>
               Descubre personas de forma aleatoria. Desliza o usa los botones
               para enviar una solicitud o pasar al siguiente.
             </Text>
@@ -88,11 +93,11 @@ export default function MeetScreen() {
           </View>
         ) : (
           <View style={styles.emptyContainer}>
-            <View style={styles.emptyIconWrap}>
-              <FontAwesome name="user-plus" size={48} color="#94A3B8" />
+            <View style={[styles.emptyIconWrap, { backgroundColor: isDark ? "rgba(59, 130, 246, 0.15)" : "rgba(59, 130, 246, 0.1)" }]}>
+              <FontAwesome name="user-plus" size={48} color={colors.tabIconDefault} />
             </View>
-            <Text style={styles.emptyTitle}>No hay nadie cerca</Text>
-            <Text style={styles.emptySubtitle}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>No hay nadie cerca</Text>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
               Vuelve a intentar más tarde para encontrar nuevas personas.
             </Text>
           </View>
@@ -100,39 +105,42 @@ export default function MeetScreen() {
 
         {people.length > 0 && (
           <View style={styles.instructionsContainer}>
-            <View style={styles.instructionsCard}>
+            <View style={[
+              styles.instructionsCard,
+              isDark && styles.instructionsCardDark
+            ]}>
               <TouchableOpacity
                 style={styles.instructionRow}
                 onPress={handleSwipeLeft}
                 activeOpacity={0.7}
               >
-                <View style={styles.instructionIconSoft}>
+                <View style={[styles.instructionIconSoft, { backgroundColor: isDark ? "rgba(100, 116, 139, 0.15)" : "rgba(100, 116, 139, 0.1)" }]}>
                   <FontAwesome
                     name="angle-double-left"
                     size={16}
-                    color="#64748B"
+                    color={colors.textSecondary}
                   />
                 </View>
-                <Text style={[styles.instructionText, { color: "#64748B" }]}>
+                <Text style={[styles.instructionText, { color: colors.textSecondary }]}>
                   No me interesa
                 </Text>
               </TouchableOpacity>
 
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: isDark ? "rgba(100, 116, 139, 0.2)" : "rgba(100, 116, 139, 0.15)" }]} />
 
               <TouchableOpacity
                 style={styles.instructionRow}
                 onPress={handleSwipeRight}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.instructionText, { color: "#64748B" }]}>
+                <Text style={[styles.instructionText, { color: colors.textSecondary }]}>
                   Enviar solicitud
                 </Text>
-                <View style={styles.instructionIconPrimary}>
+                <View style={[styles.instructionIconPrimary, { backgroundColor: isDark ? "rgba(100, 116, 139, 0.15)" : "rgba(100, 116, 139, 0.1)" }]}>
                   <FontAwesome
                     name="angle-double-right"
                     size={16}
-                    color="#64748B"
+                    color={colors.textSecondary}
                   />
                 </View>
               </TouchableOpacity>
@@ -147,7 +155,6 @@ export default function MeetScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF",
   },
   contentContainer: {
     flex: 1,
@@ -167,7 +174,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 26,
     lineHeight: 31,
-    color: "#0F172A",
     fontFamily: FONT_SEMIBOLD,
     textAlign: "center",
   },
@@ -176,7 +182,6 @@ const styles = StyleSheet.create({
     maxWidth: 340,
     fontSize: 14,
     lineHeight: 20,
-    color: "#64748B",
     fontFamily: FONT_REGULAR,
     textAlign: "center",
   },
@@ -199,18 +204,15 @@ const styles = StyleSheet.create({
     width: 84,
     height: 84,
     borderRadius: 42,
-    backgroundColor: "rgba(59, 130, 246, 0.1)",
     alignItems: "center",
     justifyContent: "center",
   },
   emptyTitle: {
     fontSize: 18,
-    color: "#0F172A",
     fontFamily: FONT_SEMIBOLD,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: "#64748B",
     fontFamily: FONT_REGULAR,
     textAlign: "center",
   },
@@ -236,6 +238,10 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 4,
   },
+  instructionsCardDark: {
+    backgroundColor: "rgba(30,41,59,0.9)",
+    borderColor: "rgba(51,65,85,0.4)",
+  },
   instructionRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -250,7 +256,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(100, 116, 139, 0.1)",
   },
   instructionIconPrimary: {
     width: 32,
@@ -258,13 +263,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(100, 116, 139, 0.1)",
   },
   divider: {
     width: 1,
     height: 28,
     marginHorizontal: 10,
-    backgroundColor: "rgba(100, 116, 139, 0.15)",
   },
   instructionText: {
     fontSize: 14,

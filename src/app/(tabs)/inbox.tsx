@@ -6,6 +6,8 @@ import { FriendNotificationItem } from "@/components/FriendNotificationItem/Frie
 import { Header } from "@/components/Header/Header";
 import { NotificationDropdown } from "@/components/NotificationDropdown/NotificationDropdown";
 import { Text, View } from "@/components/Themed";
+import { useAppTheme } from "@/providers/AppThemeProvider";
+import Colors from "@/constants/Colors";
 
 const FONT_SEMIBOLD = "AlbertSans_600SemiBold";
 const FONT_REGULAR = "AlbertSans_400Regular";
@@ -45,6 +47,9 @@ const REQUESTS_DATA: FriendRequestItem[] = [
 export default function InboxScreen() {
   const [requests, setRequests] = useState<FriendRequestItem[]>(REQUESTS_DATA);
   const [notifVisible, setNotifVisible] = useState(false);
+  const { colorScheme } = useAppTheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
 
   const toggleNotif = () => {
     setNotifVisible((prev) => !prev);
@@ -68,7 +73,7 @@ export default function InboxScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
         logoSource={require("../../../assets/images/logo blue.png")}
         onNotificationPress={toggleNotif}
@@ -85,12 +90,12 @@ export default function InboxScreen() {
         ]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <View style={styles.iconCircle}>
-              <FontAwesome name="inbox" size={36} color="#94A3B8" />
+          <View style={[styles.emptyContainer, { backgroundColor: colors.background }]}>
+            <View style={[styles.iconCircle, { backgroundColor: colors.iconCircle }]}>
+              <FontAwesome name="inbox" size={36} color={colors.tabIconDefault} />
             </View>
-            <Text style={styles.emptyTitle}>Bandeja vacía</Text>
-            <Text style={styles.emptySubtitle}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>Bandeja vacía</Text>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
               No tienes solicitudes ni notificaciones pendientes por ahora.
             </Text>
           </View>
@@ -103,7 +108,6 @@ export default function InboxScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   list: {
     paddingTop: 8,
@@ -117,13 +121,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 32,
-    backgroundColor: "#fff",
   },
   iconCircle: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: "#F1F3F5",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
@@ -131,7 +133,6 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontFamily: FONT_SEMIBOLD,
-    color: "#1E293B",
     marginBottom: 6,
     textAlign: "center",
     fontWeight: "700",
@@ -139,7 +140,6 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     fontSize: 14,
     fontFamily: FONT_REGULAR,
-    color: "#64748B",
     textAlign: "center",
     lineHeight: 20,
   },

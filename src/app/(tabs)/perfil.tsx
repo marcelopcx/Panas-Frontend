@@ -6,6 +6,8 @@ import { CustomInput } from "@/components/CustomInput/CustomInput";
 import { DynamicFormModal } from "@/components/DynamicFormModal/DynamicFormModal";
 import { OptionItem } from "@/components/OptionItem/OptionItem";
 import { Text } from "@/components/Themed";
+import Colors from "@/constants/Colors";
+import { useAppTheme } from "@/providers/AppThemeProvider";
 
 const FONT_SEMIBOLD = "AlbertSans_600SemiBold";
 
@@ -30,12 +32,17 @@ const sanitizeProfileName = (value: string) => {
 };
 
 export default function PerfilScreen() {
+  const { colorScheme, setColorScheme } = useAppTheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
+
   const [name, setName] = useState("Jhon Doe");
   const [draftName, setDraftName] = useState(name);
-  const [themePreference, setThemePreference] =
-    useState<ThemePreference>("Claro");
+  const [themePreference, setThemePreference] = useState<ThemePreference>(
+    isDark ? "Oscuro" : "Claro",
+  );
   const [draftThemePreference, setDraftThemePreference] =
-    useState<ThemePreference>("Claro");
+    useState<ThemePreference>(isDark ? "Oscuro" : "Claro");
   const [privacyPreference, setPrivacyPreference] =
     useState<PrivacyPreference>("Público");
   const [draftPrivacyPreference, setDraftPrivacyPreference] =
@@ -113,7 +120,12 @@ export default function PerfilScreen() {
           buttonTitle: "Guardar cambios",
           content: (
             <View style={styles.modalSection}>
-              <Text style={styles.modalDescription}>
+              <Text
+                style={[
+                  styles.modalDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Actualiza el nombre que ven los demás en tu perfil.
               </Text>
               <CustomInput
@@ -144,7 +156,12 @@ export default function PerfilScreen() {
           buttonTitle: "Guardar selección",
           content: (
             <View style={styles.modalSection}>
-              <Text style={styles.modalDescription}>
+              <Text
+                style={[
+                  styles.modalDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Usa el control de imagen para previsualizar el cambio y luego
                 elige desde dónde quieres tomar la foto.
               </Text>
@@ -168,6 +185,8 @@ export default function PerfilScreen() {
                       style={[
                         styles.choiceButton,
                         isSelected && styles.choiceButtonSelected,
+                        isDark && styles.choiceButtonDark,
+                        isSelected && isDark && styles.choiceButtonSelectedDark,
                       ]}
                       onPress={() => setDraftPhotoPreference(option)}
                       activeOpacity={0.8}
@@ -176,6 +195,10 @@ export default function PerfilScreen() {
                         style={[
                           styles.choiceButtonText,
                           isSelected && styles.choiceButtonTextSelected,
+                          isDark && styles.choiceButtonTextDark,
+                          isSelected &&
+                            isDark &&
+                            styles.choiceButtonTextSelectedDark,
                         ]}
                       >
                         {option}
@@ -199,7 +222,12 @@ export default function PerfilScreen() {
           buttonTitle: "Guardar tema",
           content: (
             <View style={styles.modalSection}>
-              <Text style={styles.modalDescription}>
+              <Text
+                style={[
+                  styles.modalDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Selecciona el tema que quieres usar en la app.
               </Text>
 
@@ -213,6 +241,8 @@ export default function PerfilScreen() {
                       style={[
                         styles.choiceButton,
                         isSelected && styles.choiceButtonSelected,
+                        isDark && styles.choiceButtonDark,
+                        isSelected && isDark && styles.choiceButtonSelectedDark,
                       ]}
                       onPress={() => setDraftThemePreference(option)}
                       activeOpacity={0.8}
@@ -221,6 +251,10 @@ export default function PerfilScreen() {
                         style={[
                           styles.choiceButtonText,
                           isSelected && styles.choiceButtonTextSelected,
+                          isDark && styles.choiceButtonTextDark,
+                          isSelected &&
+                            isDark &&
+                            styles.choiceButtonTextSelectedDark,
                         ]}
                       >
                         {option}
@@ -232,6 +266,9 @@ export default function PerfilScreen() {
             </View>
           ),
           onConfirm: () => {
+            const nextScheme =
+              draftThemePreference === "Oscuro" ? "dark" : "light";
+            setColorScheme(nextScheme);
             setThemePreference(draftThemePreference);
             closeModal();
           },
@@ -243,7 +280,12 @@ export default function PerfilScreen() {
           buttonTitle: "Guardar privacidad",
           content: (
             <View style={styles.modalSection}>
-              <Text style={styles.modalDescription}>
+              <Text
+                style={[
+                  styles.modalDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Define quién puede ver tu información principal.
               </Text>
 
@@ -258,6 +300,10 @@ export default function PerfilScreen() {
                         style={[
                           styles.choiceButton,
                           isSelected && styles.choiceButtonSelected,
+                          isDark && styles.choiceButtonDark,
+                          isSelected &&
+                            isDark &&
+                            styles.choiceButtonSelectedDark,
                         ]}
                         onPress={() => setDraftPrivacyPreference(option)}
                         activeOpacity={0.8}
@@ -266,6 +312,10 @@ export default function PerfilScreen() {
                           style={[
                             styles.choiceButtonText,
                             isSelected && styles.choiceButtonTextSelected,
+                            isDark && styles.choiceButtonTextDark,
+                            isSelected &&
+                              isDark &&
+                              styles.choiceButtonTextSelectedDark,
                           ]}
                         >
                           {option}
@@ -289,11 +339,18 @@ export default function PerfilScreen() {
           buttonTitle: "Aceptar",
           content: (
             <View style={styles.modalSection}>
-              <Text style={styles.modalDescription}>
+              <Text
+                style={[
+                  styles.modalDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 ¿Quieres cerrar sesión en esta cuenta?
               </Text>
-              <View style={styles.infoCard}>
-                <Text style={styles.infoCardText}>
+              <View style={[styles.infoCard, isDark && styles.infoCardDark]}>
+                <Text
+                  style={[styles.infoCardText, { color: colors.textSecondary }]}
+                >
                   Esta acción solo afecta la interfaz por ahora.
                 </Text>
               </View>
@@ -308,16 +365,35 @@ export default function PerfilScreen() {
           buttonTitle: "Eliminar cuenta",
           content: (
             <View style={styles.modalSection}>
-              <Text style={styles.modalDescription}>
+              <Text
+                style={[
+                  styles.modalDescription,
+                  { color: colors.textSecondary },
+                ]}
+              >
                 Escribe tu nombre exacto para habilitar la eliminación de tu
                 cuenta.
               </Text>
 
-              <View style={[styles.infoCard, styles.dangerCard]}>
-                <Text style={[styles.infoCardTitle, styles.dangerTitle]}>
+              <View
+                style={[
+                  styles.infoCard,
+                  styles.dangerCard,
+                  isDark && styles.dangerCardDark,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.infoCardTitle,
+                    styles.dangerTitle,
+                    { color: colors.text },
+                  ]}
+                >
                   Esta acción es irreversible en la interfaz.
                 </Text>
-                <Text style={styles.infoCardText}>
+                <Text
+                  style={[styles.infoCardText, { color: colors.textSecondary }]}
+                >
                   Debes confirmar tu identidad antes de continuar.
                 </Text>
               </View>
@@ -343,27 +419,38 @@ export default function PerfilScreen() {
   })();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.patternBackground}>
         <Image
-          source={require("../../../assets/images/background white.png")}
+          source={
+            isDark
+              ? require("../../../assets/images/background_dark.png")
+              : require("../../../assets/images/background white.png")
+          }
           style={styles.patternImage}
           resizeMode="cover"
         />
       </View>
 
       <View style={styles.profileHeader}>
-        <View style={styles.avatarContainer}>
+        <View
+          style={[styles.avatarContainer, { backgroundColor: colors.surface }]}
+        >
           {photoUri ? (
             <Image source={{ uri: photoUri }} style={styles.avatarImage} />
           ) : (
-            <View style={styles.avatarPlaceholder} />
+            <View
+              style={[
+                styles.avatarPlaceholder,
+                { backgroundColor: colors.border },
+              ]}
+            />
           )}
         </View>
-        <Text style={styles.profileName}>{name}</Text>
+        <Text style={[styles.profileName, { color: colors.text }]}>{name}</Text>
       </View>
 
-      <View style={styles.optionsContainer}>
+      <View style={[styles.optionsContainer, { backgroundColor: colors.background }]}>
         <OptionItem
           iconName="person"
           title="Nombre"
@@ -417,7 +504,11 @@ export default function PerfilScreen() {
 
       <View style={styles.logoContainer}>
         <Image
-          source={require("../../../assets/images/logo blue.png")}
+          source={
+            isDark
+              ? require("../../../assets/images/logo white.png")
+              : require("../../../assets/images/logo blue.png")
+          }
           style={styles.bottomLogo}
           resizeMode="contain"
         />
@@ -429,12 +520,10 @@ export default function PerfilScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   patternBackground: {
     height: 160,
     width: "100%",
-    backgroundColor: "#F8FAFC",
   },
   patternImage: {
     width: "100%",
@@ -450,7 +539,6 @@ const styles = StyleSheet.create({
     width: 104,
     height: 104,
     borderRadius: 52,
-    backgroundColor: "#FFFFFF",
     padding: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -461,7 +549,6 @@ const styles = StyleSheet.create({
   avatarPlaceholder: {
     flex: 1,
     borderRadius: 52,
-    backgroundColor: "#D9D9D9",
   },
   avatarImage: {
     flex: 1,
@@ -470,7 +557,6 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 20,
     fontFamily: FONT_SEMIBOLD,
-    color: "#0F172A",
     marginTop: 6,
     fontWeight: "600",
   },
@@ -486,7 +572,6 @@ const styles = StyleSheet.create({
   modalDescription: {
     fontSize: 14,
     lineHeight: 20,
-    color: "#475569",
     fontFamily: "AlbertSans_400Regular",
   },
   modalInput: {
@@ -512,6 +597,14 @@ const styles = StyleSheet.create({
     borderColor: "#2B60AD",
     backgroundColor: "#EFF6FF",
   },
+  choiceButtonDark: {
+    backgroundColor: "#1E293B",
+    borderColor: "#334155",
+  },
+  choiceButtonSelectedDark: {
+    borderColor: "#7FB2FF",
+    backgroundColor: "#1E293B",
+  },
   choiceButtonText: {
     fontSize: 14,
     color: "#0F172A",
@@ -521,6 +614,12 @@ const styles = StyleSheet.create({
   choiceButtonTextSelected: {
     color: "#2B60AD",
   },
+  choiceButtonTextDark: {
+    color: "#F8FAFC",
+  },
+  choiceButtonTextSelectedDark: {
+    color: "#7FB2FF",
+  },
   infoCard: {
     borderRadius: 14,
     backgroundColor: "#F8FAFC",
@@ -529,13 +628,20 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 6,
   },
+  infoCardDark: {
+    backgroundColor: "#1E293B",
+    borderColor: "#334155",
+  },
   dangerCard: {
     backgroundColor: "#FEF2F2",
     borderColor: "#FECACA",
   },
+  dangerCardDark: {
+    backgroundColor: "rgba(185, 28, 28, 0.15)",
+    borderColor: "rgba(185, 28, 28, 0.3)",
+  },
   infoCardTitle: {
     fontSize: 15,
-    color: "#0F172A",
     fontFamily: FONT_SEMIBOLD,
     fontWeight: "600",
   },
@@ -545,7 +651,6 @@ const styles = StyleSheet.create({
   infoCardText: {
     fontSize: 13,
     lineHeight: 18,
-    color: "#475569",
     fontFamily: "AlbertSans_400Regular",
   },
   logoContainer: {

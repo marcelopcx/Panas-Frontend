@@ -19,6 +19,8 @@ import { HeaderMessage } from "@components/HeaderMessage/HeaderMessage";
 import { Message } from "@components/Message/Message";
 import { MessageContainer } from "@components/MessageContainer/MessageContainer";
 import { ShowImageChatModal } from "@components/ShowImageMessage/ShowImageMessage";
+import { useAppTheme } from "@/providers/AppThemeProvider";
+import Colors from "@/constants/Colors";
 
 const INITIAL_MESSAGES = [
   {
@@ -61,6 +63,10 @@ export default function MessageScreen() {
     updatedAt?: string;
     avatarId?: keyof typeof AVATAR_MAP;
   }>();
+
+  const { colorScheme } = useAppTheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
 
   const name = params.name ?? "Jhon Doe";
   const avatarSource = AVATAR_MAP[params.avatarId ?? "user1"];
@@ -175,7 +181,7 @@ export default function MessageScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={["top", "bottom"]}>
       <HeaderMessage
         name={name}
         avatarSource={avatarSource}
@@ -184,8 +190,12 @@ export default function MessageScreen() {
 
       <View style={styles.keyboardContainer}>
         <ImageBackground
-          source={require("../../assets/images/background white.png")}
-          style={styles.chatBackground}
+          source={
+            isDark
+              ? require("../../assets/images/background_dark.png")
+              : require("../../assets/images/background white.png")
+          }
+          style={[styles.chatBackground, { backgroundColor: colors.background }]}
           imageStyle={{ opacity: 0.15 }}
         >
           <FlatList
@@ -238,14 +248,12 @@ export default function MessageScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F6F8FC",
   },
   keyboardContainer: {
     flex: 1,
   },
   chatBackground: {
     flex: 1,
-    backgroundColor: "#F6F8FC",
     position: "relative",
   },
   listContent: {

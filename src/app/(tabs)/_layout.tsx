@@ -1,60 +1,153 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import React from "react";
-import { Pressable } from "react-native";
+import { StyleSheet, View } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
-import { useClientOnlyValue } from "@/components/useClientOnlyValue";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={22} {...props} />;
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+  const insets = useSafeAreaInsets();
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Tab One",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? "light"].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="two"
-        options={{
-          title: "Tab Two",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        }}
-      />
-    </Tabs>
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+      <View style={styles.container}>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: "#FFFFFF",
+            tabBarInactiveTintColor: "#FFFFFF",
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: "600",
+              fontFamily: "AlbertSans_600SemiBold",
+              textAlign: "center",
+              marginTop: 2,
+            },
+
+            tabBarStyle: [
+              styles.tabBar,
+              { marginBottom: Math.max(insets.bottom, 10) },
+            ],
+            tabBarItemStyle: styles.tabBarItem,
+          }}
+        >
+          <Tabs.Screen
+            name="chats"
+            options={{
+              title: "Chats",
+              tabBarIcon: ({ color, focused }) => (
+                <View
+                  style={[
+                    styles.iconContainer,
+                    focused && styles.activeIconContainer,
+                  ]}
+                >
+                  <TabBarIcon name="commenting" color={color} />
+                </View>
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="meet"
+            options={{
+              title: "Conocer",
+              tabBarIcon: ({ color, focused }) => (
+                <View
+                  style={[
+                    styles.iconContainer,
+                    focused && styles.activeIconContainer,
+                  ]}
+                >
+                  <TabBarIcon name="users" color={color} />
+                </View>
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="inbox"
+            options={{
+              title: "Bandeja",
+              tabBarIcon: ({ color, focused }) => (
+                <View
+                  style={[
+                    styles.iconContainer,
+                    focused && styles.activeIconContainer,
+                  ]}
+                >
+                  <TabBarIcon name="inbox" color={color} />
+                </View>
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="perfil"
+            options={{
+              title: "Perfil",
+              tabBarIcon: ({ color, focused }) => (
+                <View
+                  style={[
+                    styles.iconContainer,
+                    focused && styles.activeIconContainer,
+                  ]}
+                >
+                  <TabBarIcon name="user" color={color} />
+                </View>
+              ),
+            }}
+          />
+        </Tabs>
+      </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  container: {
+    flex: 1,
+    justifyContent: "space-between",
+    backgroundColor: "#FFFFFF",
+  },
+  tabBar: {
+    backgroundColor: "#2B60AD",
+    borderRadius: 14,
+    height: 65,
+    width: "95%",
+    alignSelf: "center",
+    borderTopWidth: 0,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    paddingTop: 6,
+    paddingBottom: 6,
+  },
+  tabBarItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconContainer: {
+    width: 40,
+    height: 28,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 2,
+  },
+  activeIconContainer: {
+    backgroundColor: "#1D4B8A",
+  },
+});

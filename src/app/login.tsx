@@ -16,6 +16,8 @@ import { CustomButton } from "@/components/CustomButton/CustomButton";
 import { CustomDivider } from "@/components/CustomDivider/CustomDivider";
 import { CustomInput } from "@/components/CustomInput/CustomInput";
 import { HeaderLogo } from "@/components/HeaderLogo/HeaderLogo";
+import { useAppTheme } from "@/providers/AppThemeProvider";
+import Colors from "@/constants/Colors";
 
 const COLOR_BLUE = "#2B60AD";
 const COLOR_TEXT_BLUE = "#2B60AD";
@@ -32,6 +34,9 @@ export default function LoginScreen() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { colorScheme } = useAppTheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
 
   const validateEmail = (value: string) => {
     if (!value.trim()) {
@@ -103,7 +108,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? colors.background : COLOR_BLUE }]}>
       <AnimatedBackgroundPattern />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -118,7 +123,10 @@ export default function LoginScreen() {
             <HeaderLogo />
           </View>
 
-          <View style={styles.formContainer}>
+          <View style={[
+            styles.formContainer,
+            { backgroundColor: colors.surface }
+          ]}>
             <CustomInput
               label="Correo"
               placeholder="tucorreo@example.com"
@@ -160,9 +168,9 @@ export default function LoginScreen() {
               <CustomDivider containerStyle={styles.dividerStyle} />
 
               <View style={styles.registerContainer}>
-                <Text style={styles.registerPrompt}>Sin cuenta? </Text>
+                <Text style={[styles.registerPrompt, { color: colors.textSecondary }]}>Sin cuenta? </Text>
                 <TouchableOpacity onPress={handleRegister} activeOpacity={0.7}>
-                  <Text style={styles.registerLink}>Regístrate</Text>
+                  <Text style={[styles.registerLink, { color: colors.tint }]}>Regístrate</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -176,7 +184,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLOR_BLUE,
   },
   keyboardView: {
     flex: 1,
@@ -209,7 +216,6 @@ const styles = StyleSheet.create({
     width: "95%",
     alignSelf: "center",
     flex: 1,
-    backgroundColor: "#FFFFFF",
     borderRadius: 24,
     paddingHorizontal: 28,
     paddingTop: 36,
@@ -241,12 +247,10 @@ const styles = StyleSheet.create({
   },
   registerPrompt: {
     fontSize: 14,
-    color: COLOR_GRAY_TEXT,
     fontFamily: FONT_ALBERT_SANS_REGULAR,
   },
   registerLink: {
     fontSize: 14,
-    color: COLOR_TEXT_BLUE,
     fontFamily: FONT_ALBERT_SANS_BOLD,
     fontWeight: "700",
   },

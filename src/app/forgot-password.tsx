@@ -2,14 +2,19 @@ import { StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { CustomButton } from "@/components/CustomButton/CustomButton";
+import { useAppTheme } from "@/providers/AppThemeProvider";
+import Colors from "@/constants/Colors";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const { colorScheme } = useAppTheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Recuperar contraseña</Text>
-      <Text style={styles.subtitle}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Recuperar contraseña</Text>
+      <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
         Ingresa tu correo y te enviaremos un enlace para restablecer la
         contraseña.
       </Text>
@@ -24,7 +29,6 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 28,
@@ -36,7 +40,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: "#64748B",
     marginBottom: 32,
     textAlign: "center",
   },

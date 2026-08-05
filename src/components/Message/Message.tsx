@@ -1,5 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+
+const FONT_REGULAR = "AlbertSans_400Regular";
+const FONT_SEMIBOLD = "AlbertSans_600SemiBold";
 
 export interface MessageProps {
   text?: string;
@@ -9,6 +15,8 @@ export interface MessageProps {
   onPressImage?: (image: any, time: string) => void;
 }
 
+const MAX_VISIBLE_LINES = 4;
+
 export const Message = ({
   text,
   image,
@@ -16,7 +24,15 @@ export const Message = ({
   isMine,
   onPressImage,
 }: MessageProps) => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
+  const [expanded, setExpanded] = useState(false);
+  const [isLong, setIsLong] = useState(false);
+  const [measured, setMeasanded] = useState(false);
   const hasImageOnly = image && !text;
+
+  const showTruncated = measured && !expanded && isLong;
 
   return (
     <View
@@ -25,45 +41,79 @@ export const Message = ({
         isMine ? styles.containerRight : styles.containerLeft,
       ]}
     >
-      <View
-        style={[
-          styles.bubble,
-          isMine ? styles.bubbleMine : styles.bubbleTheirs,
-        ]}
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => setExpanded((prev) => !prev)}
+        disabled={!measured || !isLong}
+        style={styles.bubbleTouchable}
       >
-        {image && (
-          <View style={styles.imageContainer}>
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => onPressImage && onPressImage(image, time)}
+        <View
+          style={[
+            styles.bubble,
+            isMine ? styles.bubbleMine : styles.bubbleTheirs,
+            !isMine && { backgroundColor: isDark ? '#1E293B' : '#EFF6FF' },
+          ]}
+        >
+          {image && (
+            <View style={styles.imageContainer}>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => onPressImage && onPressImage(image, time)}
+              >
+                <Image
+                  source={image}
+                  style={styles.messageImage}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+
+              {hasImageOnly && <Text style={styles.timeAbsolute}>{time}</Text>}
+            </View>
+          )}
+
+          {text && (
+            <View>
+              <Text
+                style={[
+                  styles.text,
+                  isMine ? styles.textMine : { color: colors.text },
+                ]}
+                numberOfLines={showTruncated ? 4 : undefined}
+                onTextLayout={(e) => {
+                  if (!measured) {
+                    setIsLong(e.nativeEvent.lines.length > 4);
+                    setMeasanded(true);
+                  }
+                }}
+              >
+                {text}
+              </Text>
+
+              {isLong && (
+                <Text
+                  style={[
+                    styles.showMoreText,
+                    { color: isMine ? 'rgba(255,255,255,0.9)' : colors.tint },
+                  ]}
+                >
+                  {expanded ? 'Mostrar menos' : 'Mostrar más'}
+                </Text>
+              )}
+            </View>
+          )}
+
+          {!hasImageOnly && (
+            <Text
+              style={[
+                styles.time,
+                isMine ? styles.timeMine : { color: colors.textSecondary },
+              ]}
             >
-              <Image
-                source={image}
-                style={styles.messageImage}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-
-            {hasImageOnly && <Text style={styles.timeAbsolute}>{time}</Text>}
-          </View>
-        )}
-
-        {text && (
-          <Text
-            style={[styles.text, isMine ? styles.textMine : styles.textTheirs]}
-          >
-            {text}
-          </Text>
-        )}
-
-        {!hasImageOnly && (
-          <Text
-            style={[styles.time, isMine ? styles.timeMine : styles.timeTheirs]}
-          >
-            {time}
-          </Text>
-        )}
-      </View>
+              {time}
+            </Text>
+          )}
+        </View>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -81,14 +131,15 @@ const styles = StyleSheet.create({
   containerRight: {
     justifyContent: "flex-end",
   },
-  bubble: {
+  bubbleTouchable: {
     maxWidth: "80%",
+  },
+  bubble: {
     padding: 12,
     borderRadius: 16,
     position: "relative",
   },
   bubbleTheirs: {
-    backgroundColor: "#E8EEF7",
     borderTopLeftRadius: 4,
   },
   bubbleMine: {
@@ -102,22 +153,25 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 15,
-    fontFamily: "AlbertSans_400Regular",
+    fontFamily: FONT_REGULAR,
     lineHeight: 20,
     marginTop: 4,
   },
-  textTheirs: {
-    color: "#0F172A",
-  },
   textMine: {
     color: "#FFFFFF",
+  },
+  showMoreText: {
+    fontSize: 12,
+    fontFamily: FONT_SEMIBOLD,
+    fontWeight: "600",
+    marginTop: 6,
   },
   imageContainer: {
     position: "relative",
   },
   messageImage: {
     width: 250,
-    height: 150,
+    height: 250,
     borderRadius: 12,
   },
   timeAbsolute: {
@@ -125,7 +179,7 @@ const styles = StyleSheet.create({
     bottom: 6,
     right: 6,
     fontSize: 10,
-    fontFamily: "AlbertSans_400Regular",
+    fontFamily: FONT_REGULAR,
     color: "#FFFFFF",
     backgroundColor: "rgba(15, 23, 42, 0.6)",
     paddingHorizontal: 6,
@@ -137,10 +191,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     alignSelf: "flex-end",
     marginTop: 4,
-    fontFamily: "AlbertSans_400Regular",
-  },
-  timeTheirs: {
-    color: "#64748B",
+    fontFamily: FONT_REGULAR,
   },
   timeMine: {
     color: "rgba(255,255,255,0.9)",

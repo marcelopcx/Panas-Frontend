@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, TextStyle, View, ViewStyle } from "react-native";
 
-const COLOR_BLUE = "#2B60AD";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 
 export interface CustomDividerProps {
   color?: string;
@@ -27,7 +28,7 @@ const dotGlow = (color: string, intensity: number): ViewStyle => ({
 });
 
 export const CustomDivider: React.FC<CustomDividerProps> = ({
-  color = COLOR_BLUE,
+  color,
   dotSize = 8,
   dotGap = 10,
   numDots = 5,
@@ -40,6 +41,11 @@ export const CustomDivider: React.FC<CustomDividerProps> = ({
   showGlow = true,
   glowIntensity = 1,
 }) => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
+  const effectiveColor = color ?? colors.tint;
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
@@ -64,10 +70,10 @@ export const CustomDivider: React.FC<CustomDividerProps> = ({
     transform: [{ scale: scaleAnim }],
   };
 
-  const glow = showGlow ? dotGlow(color, glowIntensity) : {};
+  const glow = showGlow ? dotGlow(effectiveColor, glowIntensity) : {};
 
   const dotColorStyle: ViewStyle = {
-    backgroundColor: color,
+    backgroundColor: effectiveColor,
     width: dotSize,
     height: dotSize,
     borderRadius: dotSize / 2,
@@ -96,7 +102,7 @@ export const CustomDivider: React.FC<CustomDividerProps> = ({
         <Animated.Text
           style={[
             styles.label,
-            { color: color },
+            { color: effectiveColor },
             { opacity: fadeAnim },
             labelStyle,
           ]}

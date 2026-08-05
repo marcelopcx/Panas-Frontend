@@ -9,6 +9,9 @@ import {
   View,
 } from "react-native";
 
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+
 const FONT_REGULAR = "AlbertSans_400Regular";
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SWIPE_THRESHOLD = 0.25 * SCREEN_WIDTH;
@@ -35,6 +38,10 @@ export const CardUser = ({
   isFirst,
   index,
 }: CardUserProps) => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
+
   const position = useRef(new Animated.ValueXY()).current;
 
   const panResponder = useRef(
@@ -122,9 +129,9 @@ export const CardUser = ({
       {...(isFirst ? panResponder.panHandlers : {})}
     >
       <View style={styles.cardWrapper}>
-        <View style={styles.layerGray} />
-        <View style={styles.layerBlue} />
-        <View style={styles.accentGlow} />
+        <View style={[styles.layerGray, { backgroundColor: isDark ? "#334155" : "#D7DDE8", opacity: isDark ? 0.5 : 0.7 }]} />
+        <View style={[styles.layerBlue, { backgroundColor: isDark ? "rgba(59, 130, 246, 0.08)" : "rgba(59, 130, 246, 0.12)", borderColor: isDark ? "rgba(59, 130, 246, 0.12)" : "rgba(59, 130, 246, 0.2)" }]} />
+        <View style={[styles.accentGlow, { backgroundColor: isDark ? "rgba(59, 130, 246, 0.1)" : "rgba(59, 130, 246, 0.16)" }]} />
 
         <Image source={user.image} style={styles.image} resizeMode="cover" />
 
@@ -152,7 +159,7 @@ export const CardUser = ({
           </>
         )}
       </View>
-      <Text style={styles.name}>{user.name}</Text>
+      <Text style={[styles.name, { color: colors.text }]}>{user.name}</Text>
     </Animated.View>
   );
 };
@@ -179,9 +186,7 @@ const styles = StyleSheet.create({
     left: 10,
     width: "100%",
     height: "100%",
-    backgroundColor: "#D7DDE8",
     borderRadius: 28,
-    opacity: 0.7,
   },
   layerBlue: {
     position: "absolute",
@@ -190,9 +195,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: 28,
-    backgroundColor: "rgba(59, 130, 246, 0.12)", // Azul suave
     borderWidth: 1,
-    borderColor: "rgba(59, 130, 246, 0.2)",
   },
   accentGlow: {
     position: "absolute",
@@ -201,7 +204,6 @@ const styles = StyleSheet.create({
     width: 92,
     height: 92,
     borderRadius: 46,
-    backgroundColor: "rgba(59, 130, 246, 0.16)",
   },
   topBadge: {
     position: "absolute",
@@ -230,7 +232,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 20,
     fontFamily: FONT_REGULAR,
-    color: "#0F172A",
     textAlign: "center",
     marginTop: 4,
   },

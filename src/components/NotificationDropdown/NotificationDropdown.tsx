@@ -5,13 +5,16 @@ import {
   LayoutAnimation,
   Modal,
   StyleSheet,
+  Text,
   TouchableWithoutFeedback,
   UIManager,
   View,
 } from "react-native";
 import { NotificationContainer } from "@/components/NotificationContainer/NotificationContainer";
 import { NotificationItem } from "@/components/NotificationItem/NotificationItem";
-import { Text } from "@/components/Themed";
+
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -46,6 +49,9 @@ export const NotificationDropdown = ({
   onClose: () => void;
 }) => {
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -100,7 +106,7 @@ export const NotificationDropdown = ({
             >
               <NotificationContainer>
                 {notifications.length === 0 ? (
-                  <Text style={styles.emptyText}>
+                  <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
                     No tienes notificaciones
                   </Text>
                 ) : (
@@ -135,7 +141,6 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 14,
     fontFamily: "AlbertSans_400Regular",
-    color: "#94A3B8",
     textAlign: "center",
     paddingVertical: 12,
   },

@@ -9,6 +9,9 @@ import {
   ViewStyle,
 } from "react-native";
 
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+
 export interface CustomButtonProps extends TouchableOpacityProps {
   title: string;
   loading?: boolean;
@@ -20,17 +23,6 @@ export interface CustomButtonProps extends TouchableOpacityProps {
   textStyle?: TextStyle;
   loadingText?: string;
 }
-
-const COLOR_BLUE = "#0088FF";
-const COLOR_BLUE_DARK = "#0072E6";
-const COLOR_BLUE_LIGHT = "#4DA6FF";
-const COLOR_BLUE_50 = "#EFF6FF";
-const COLOR_SLATE_900 = "#0F172A";
-const COLOR_SLATE_800 = "#1E293B";
-const COLOR_WHITE = "#FFFFFF";
-const COLOR_DISABLED_BG = "#F1F5F9";
-const COLOR_DISABLED_BORDER = "#CBD5E1";
-const COLOR_DISABLED_TEXT = "#94A3B8";
 
 const FONT_ALBERT_SANS_SEMIBOLD = "AlbertSans_600SemiBold";
 
@@ -47,6 +39,10 @@ export const CustomButton: React.FC<CustomButtonProps> = ({
   onPress,
   ...touchableProps
 }) => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
+
   const isButtonDisabled = disabled && !loading;
 
   const isPrimary = variant === "primary";
@@ -60,44 +56,44 @@ export const CustomButton: React.FC<CustomButtonProps> = ({
     lg: { height: 60, paddingHorizontal: 20 },
   };
 
-  let backgroundColor = COLOR_SLATE_900;
+  let backgroundColor = colors.card;
   let borderColor = "transparent";
   let borderWidth = 0;
-  let textColor = COLOR_WHITE;
-  let spinnerColor = COLOR_WHITE;
+  let textColor = "#FFFFFF";
+  let spinnerColor = "#FFFFFF";
 
   if (variant === "primary") {
-    backgroundColor = COLOR_BLUE;
+    backgroundColor = colors.tint;
   } else if (variant === "secondary") {
-    backgroundColor = COLOR_SLATE_900;
+    backgroundColor = isDark ? "#1E293B" : "#0F172A";
   } else if (variant === "outline") {
     backgroundColor = "transparent";
-    borderColor = COLOR_BLUE;
+    borderColor = colors.tint;
     borderWidth = 1.5;
-    textColor = COLOR_BLUE;
-    spinnerColor = COLOR_BLUE;
+    textColor = colors.tint;
+    spinnerColor = colors.tint;
   } else if (variant === "ghost") {
-    backgroundColor = COLOR_BLUE_50;
-    textColor = COLOR_BLUE;
-    spinnerColor = COLOR_BLUE;
+    backgroundColor = colors.borderSubtle;
+    textColor = colors.tint;
+    spinnerColor = colors.tint;
   }
 
   if (loading && (isPrimary || isSecondary)) {
-    backgroundColor = COLOR_BLUE;
+    backgroundColor = colors.tint;
   }
 
   if (isButtonDisabled) {
     if (isOutline || isGhost) {
-      textColor = COLOR_DISABLED_TEXT;
-      spinnerColor = COLOR_DISABLED_TEXT;
-      borderColor = isOutline ? COLOR_DISABLED_BORDER : "transparent";
+      textColor = colors.tabIconDefault;
+      spinnerColor = colors.tabIconDefault;
+      borderColor = isOutline ? colors.border : "transparent";
       borderWidth = isOutline ? 1.5 : 0;
     } else {
-      backgroundColor = COLOR_DISABLED_BG;
-      borderColor = COLOR_DISABLED_BORDER;
+      backgroundColor = colors.borderSubtle;
+      borderColor = colors.border;
       borderWidth = 1.5;
-      textColor = COLOR_DISABLED_TEXT;
-      spinnerColor = COLOR_DISABLED_TEXT;
+      textColor = colors.tabIconDefault;
+      spinnerColor = colors.tabIconDefault;
     }
   }
 
@@ -115,7 +111,7 @@ export const CustomButton: React.FC<CustomButtonProps> = ({
         !fullWidth && styles.buttonInline,
         { backgroundColor, borderColor, borderWidth },
         buttonSizes[size],
-        isButtonDisabled && styles.buttonDisabledBorder,
+        isButtonDisabled && { borderColor: colors.border },
         containerStyle,
       ]}
       {...touchableProps}
@@ -132,7 +128,7 @@ export const CustomButton: React.FC<CustomButtonProps> = ({
         style={[
           styles.text,
           isButtonDisabled
-            ? styles.textDisabled
+            ? { color: textColor }
             : [
                 isPrimary || isSecondary
                   ? styles.textOnDark
@@ -161,9 +157,6 @@ const styles = StyleSheet.create({
     width: undefined,
     alignSelf: "flex-start",
   },
-  buttonDisabledBorder: {
-    borderColor: COLOR_DISABLED_BORDER,
-  },
   text: {
     fontSize: 16,
     fontFamily: FONT_ALBERT_SANS_SEMIBOLD,
@@ -171,13 +164,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   textOnDark: {
-    color: COLOR_WHITE,
+    color: "#FFFFFF",
   },
   textOnLight: {
-    color: COLOR_BLUE,
-  },
-  textDisabled: {
-    color: COLOR_DISABLED_TEXT,
+    color: "#2B60AD",
   },
   spinner: {
     marginRight: 8,

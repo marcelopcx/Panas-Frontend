@@ -13,6 +13,9 @@ import {
   ViewStyle,
 } from "react-native";
 
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+
 export type CustomInputType = "text" | "image" | "search";
 
 export interface CustomInputProps extends Omit<TextInputProps, "style"> {
@@ -34,7 +37,7 @@ export interface CustomInputProps extends Omit<TextInputProps, "style"> {
 const COLOR_BLUE = "#0088FF";
 const COLOR_RED = "#FF2D55";
 const COLOR_GRAY = "#94A3B8";
-const COLOR_SEARCH_BG = "#2A5CA8"; // Color del fondo de búsqueda de la imagen
+const COLOR_SEARCH_BG = "#2A5CA8";
 const FONT_ALBERT_SANS_REGULAR = "AlbertSans_400Regular";
 const FONT_ALBERT_SANS_MEDIUM = "AlbertSans_500Medium";
 const FONT_ALBERT_SANS_SEMIBOLD = "AlbertSans_600SemiBold";
@@ -67,6 +70,9 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
   ) => {
     const [isFocused, setIsFocused] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const { colorScheme } = useColorScheme();
+    const isDark = colorScheme === "dark";
+    const colors = isDark ? Colors.dark : Colors.light;
 
     const isError = !!error;
     const isSearch = type === "search";
@@ -137,6 +143,7 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
                 height: imageSize,
                 borderRadius: imageSize / 2,
                 borderColor: activeColor,
+                backgroundColor: colors.inputBackground,
               },
             ]}
           >
@@ -150,7 +157,7 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
                 }}
               />
             ) : (
-              <Ionicons name="camera-outline" size={32} color="#000000" />
+              <Ionicons name="camera-outline" size={32} color={isDark ? colors.textSecondary : "#000000"} />
             )}
           </TouchableOpacity>
 
@@ -171,12 +178,18 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
           style={[
             styles.inputContainer,
             isSearch
-              ? styles.searchInputContainer
-              : { borderColor: activeColor },
+              ? {
+                  backgroundColor: isDark ? '#1E3A8A' : COLOR_SEARCH_BG,
+                  borderWidth: 0,
+                }
+              : {
+                  borderColor: activeColor,
+                  backgroundColor: colors.inputBackground,
+                },
           ]}
         >
           {label && !isSearch && (
-            <View style={styles.labelWrapper}>
+            <View style={[styles.labelWrapper, { backgroundColor: colors.inputBackground }]}>
               <Text style={[styles.label, { color: activeColor }]}>
                 {label}
               </Text>
@@ -251,7 +264,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   imageContainer: {
-    backgroundColor: "#ffffff",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1.5,
@@ -265,7 +277,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 16,
     height: 56,
-    backgroundColor: "#ffffff",
     position: "relative",
   },
   searchInputContainer: {
@@ -277,7 +288,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -11,
     left: 20,
-    backgroundColor: "#ffffff",
     paddingHorizontal: 4,
     zIndex: 1,
   },

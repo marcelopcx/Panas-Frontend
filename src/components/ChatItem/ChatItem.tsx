@@ -8,6 +8,9 @@ import {
   View,
 } from "react-native";
 
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+
 const FONT_SEMIBOLD = "AlbertSans_600SemiBold";
 const FONT_REGULAR = "AlbertSans_400Regular";
 
@@ -28,11 +31,16 @@ export const ChatItem = ({
   avatarSource,
   onPress,
 }: ChatItemProps) => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
+
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [
         styles.chatContainer,
+        { backgroundColor: colors.background },
         pressed && styles.chatPressed,
       ]}
     >
@@ -44,16 +52,20 @@ export const ChatItem = ({
 
       <View style={styles.contentContainer}>
         <View style={styles.topRow}>
-          <Text style={styles.chatTitle}>{name}</Text>
-          <Text style={styles.timeText}>{updatedAt}</Text>
+          <Text style={[styles.chatTitle, { color: colors.text }]}>
+            {name}
+          </Text>
+          <Text style={[styles.timeText, { color: colors.textSecondary }]}>
+            {updatedAt}
+          </Text>
         </View>
 
         <View style={styles.bottomRow}>
-          <Text style={styles.chatMessage} numberOfLines={1}>
+          <Text style={[styles.chatMessage, { color: colors.textSecondary }]} numberOfLines={1}>
             {lastMessage}
           </Text>
           {unreadCount > 0 && (
-            <View style={styles.badge}>
+            <View style={[styles.badge, { backgroundColor: colors.badge }]}>
               <Text style={styles.badgeText}>{unreadCount}</Text>
             </View>
           )}
@@ -69,12 +81,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 12,
-    backgroundColor: "#FFFFFF",
     borderRadius: 12,
     marginVertical: 4,
   },
   chatPressed: {
-    backgroundColor: "#F1F3F5",
+    opacity: 0.8,
   },
   avatar: {
     width: 50,
@@ -95,13 +106,11 @@ const styles = StyleSheet.create({
   chatTitle: {
     fontSize: 16,
     fontFamily: FONT_SEMIBOLD,
-    color: "#1E293B",
     fontWeight: "700",
   },
   timeText: {
     fontSize: 12,
     fontFamily: FONT_REGULAR,
-    color: "#94A3B8",
   },
   bottomRow: {
     flexDirection: "row",
@@ -112,11 +121,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontFamily: FONT_REGULAR,
-    color: "#64748B",
     marginRight: 8,
   },
   badge: {
-    backgroundColor: "#212529",
     borderRadius: 10,
     minWidth: 20,
     height: 20,

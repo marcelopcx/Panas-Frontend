@@ -8,24 +8,50 @@ import {
   View,
 } from "react-native";
 
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+
 export type HeaderProps = {
   logoSource: ImageSourcePropType;
   onNotificationPress?: () => void;
 };
 
 export const Header = ({ logoSource, onNotificationPress }: HeaderProps) => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
+  const effectiveLogoSource = isDark
+    ? require("../../../assets/images/logo white.png")
+    : logoSource;
+
   return (
-    <View style={styles.headerContainer}>
+    <View
+      style={[
+        styles.headerContainer,
+        { backgroundColor: colors.background, borderBottomColor: colors.border },
+      ]}
+    >
       <View style={styles.logoContainer}>
-        <Image source={logoSource} style={styles.logo} resizeMode="contain" />
+        <Image
+          source={effectiveLogoSource}
+          style={styles.logo}
+          resizeMode="contain"
+        />
       </View>
 
       <TouchableOpacity
-        style={styles.notificationButton}
+        style={[
+          styles.notificationButton,
+          { backgroundColor: colors.border },
+        ]}
         onPress={onNotificationPress}
         activeOpacity={0.7}
       >
-        <FontAwesome name="bell" size={18} color="#2C5BA2" />
+        <FontAwesome
+          name="bell"
+          size={18}
+          color={isDark ? "#FFFFFF" : "#2C5BA2"}
+        />
       </TouchableOpacity>
     </View>
   );
@@ -34,13 +60,11 @@ export const Header = ({ logoSource, onNotificationPress }: HeaderProps) => {
 const styles = StyleSheet.create({
   headerContainer: {
     height: 60,
-    backgroundColor: "#FFFFFF",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#F1F3F5",
   },
   logoContainer: {
     height: 36,

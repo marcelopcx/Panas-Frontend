@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Easing, StyleSheet, View, ViewStyle } from "react-native";
 
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+
 interface AnimatedBackgroundPatternProps {
   style?: ViewStyle;
   opacity?: number;
@@ -10,6 +13,9 @@ export function AnimatedBackgroundPattern({
   style,
   opacity = 0.18,
 }: AnimatedBackgroundPatternProps) {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
   const drift = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -40,9 +46,13 @@ export function AnimatedBackgroundPattern({
   });
 
   return (
-    <View pointerEvents="none" style={[styles.container, style, { opacity }]}>
+    <View pointerEvents="none" style={[styles.container, style, { opacity, backgroundColor: colors.tint }]}>
       <Animated.Image
-        source={require("../../assets/images/background-icons.png")}
+        source={
+          isDark
+            ? require("../../assets/images/background_dark.png")
+            : require("../../assets/images/background white.png")
+        }
         resizeMode="cover"
         style={[
           styles.image,
@@ -59,7 +69,6 @@ const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
     overflow: "hidden",
-    backgroundColor: "#2B60AD",
   },
   image: {
     width: "120%",

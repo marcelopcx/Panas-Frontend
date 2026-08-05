@@ -12,6 +12,9 @@ import {
   View,
 } from "react-native";
 
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+
 type ShowImageChatModalProps = {
   visible: boolean;
   imageSource: ImageSourcePropType | null;
@@ -25,6 +28,9 @@ export const ShowImageChatModal = ({
   time,
   onClose,
 }: ShowImageChatModalProps) => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -65,16 +71,17 @@ export const ShowImageChatModal = ({
                 {
                   opacity: fadeAnim,
                   transform: [{ scale: scaleAnim }],
+                  backgroundColor: colors.card,
                 },
               ]}
             >
               <View style={styles.header}>
-                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                  <Ionicons name="close" size={20} color="#64748B" />
+                <TouchableOpacity onPress={onClose} style={[styles.closeButton, { backgroundColor: colors.border }]}>
+                  <Ionicons name="close" size={20} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.imageWrapper}>
+              <View style={[styles.imageWrapper, { backgroundColor: colors.background }]}>
                 <Image
                   source={imageSource}
                   style={styles.fullImage}
@@ -82,7 +89,7 @@ export const ShowImageChatModal = ({
                 />
               </View>
 
-              {time ? <Text style={styles.timeText}>{time}</Text> : null}
+              {time ? <Text style={[styles.timeText, { color: colors.textSecondary }]}>{time}</Text> : null}
             </Animated.View>
           </TouchableWithoutFeedback>
         </View>
@@ -101,7 +108,6 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     width: "100%",
-    backgroundColor: "#F8FAFC",
     borderRadius: 24,
     padding: 16,
     shadowColor: "#0F172A",
@@ -139,7 +145,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 12,
     fontFamily: "AlbertSans_400Regular",
-    color: "#64748B",
     alignSelf: "flex-end",
   },
 });

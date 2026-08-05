@@ -7,11 +7,15 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { useColorScheme } from "@/components/useColorScheme";
+
 const { width } = Dimensions.get("window");
 
 const TEXT_REVEAL_DURATION = 2800;
 
 export const HeaderLogo = () => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
   const textReveal = useSharedValue(0);
 
   useEffect(() => {
@@ -33,11 +37,15 @@ export const HeaderLogo = () => {
   return (
     <View style={styles.logoContainer}>
       <Animated.View style={[styles.textRevealContainer, textAnimatedStyle]}>
-        <Image
-          source={require("../../../assets/images/logo.png")}
-          style={styles.logoText}
-          resizeMode="contain"
-        />
+      <Image
+        source={
+          isDark
+            ? require("../../../assets/images/logo white.png")
+            : require("../../../assets/images/logo.png")
+        }
+        style={styles.logoText}
+        resizeMode="contain"
+      />
       </Animated.View>
     </View>
   );

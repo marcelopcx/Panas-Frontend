@@ -1,6 +1,9 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+
 const FONT_SEMIBOLD = "AlbertSans_600SemiBold";
 const FONT_REGULAR = "AlbertSans_400Regular";
 
@@ -17,34 +20,38 @@ export const FriendNotificationItem = ({
   onAccept,
   onReject,
 }: FriendNotificationItemProps) => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
+
   return (
-    <View style={styles.container}>
-      <View style={styles.avatar} />
+    <View style={[styles.container, { backgroundColor: colors.background, borderColor: colors.borderSubtle }]}>
+      <View style={[styles.avatar, { backgroundColor: colors.border }]} />
 
       <View style={styles.contentContainer}>
-        <Text style={styles.nameText} numberOfLines={1}>
+        <Text style={[styles.nameText, { color: colors.text }]} numberOfLines={1}>
           {name}
         </Text>
-        <Text style={styles.messageText} numberOfLines={1}>
+        <Text style={[styles.messageText, { color: colors.textSecondary }]} numberOfLines={1}>
           {message}
         </Text>
       </View>
 
       <View style={styles.actionsContainer}>
         <TouchableOpacity
-          style={styles.acceptButton}
+          style={[styles.acceptButton, { backgroundColor: colors.borderSubtle }]}
           onPress={onAccept}
           activeOpacity={0.7}
         >
-          <Text style={styles.acceptButtonText}>Aceptar</Text>
+          <Text style={[styles.acceptButtonText, { color: colors.text }]}>Aceptar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.rejectButton}
+          style={[styles.rejectButton, { backgroundColor: colors.borderSubtle }]}
           onPress={onReject}
           activeOpacity={0.7}
         >
-          <Text style={styles.rejectButtonText}>Rechazar</Text>
+          <Text style={[styles.rejectButtonText, { color: colors.textSecondary }]}>Rechazar</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -55,18 +62,15 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
     paddingVertical: 10,
     paddingHorizontal: 14,
     marginVertical: 4,
     borderWidth: 1,
-    borderColor: "#F1F3F5",
   },
   avatar: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: "#D9D9D9",
     marginRight: 10,
   },
   contentContainer: {
@@ -77,21 +81,18 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 14,
     fontFamily: FONT_SEMIBOLD,
-    color: "#1E293B",
     marginBottom: 1,
     fontWeight: "700",
   },
   messageText: {
     fontSize: 12,
     fontFamily: FONT_REGULAR,
-    color: "#64748B",
   },
   actionsContainer: {
     flexDirection: "row",
     gap: 6,
   },
   acceptButton: {
-    backgroundColor: "#E2E8F0",
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
@@ -101,11 +102,9 @@ const styles = StyleSheet.create({
   acceptButtonText: {
     fontSize: 11,
     fontFamily: FONT_SEMIBOLD,
-    color: "#475569",
     fontWeight: "600",
   },
   rejectButton: {
-    backgroundColor: "#F1F5F9",
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
@@ -115,7 +114,6 @@ const styles = StyleSheet.create({
   rejectButtonText: {
     fontSize: 11,
     fontFamily: FONT_SEMIBOLD,
-    color: "#64748B",
     fontWeight: "600",
   },
 });

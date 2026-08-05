@@ -11,7 +11,9 @@ import {
   View,
 } from "react-native";
 
-import { CustomButton } from "@components/CustomButton/CustomButton";
+import { CustomButton } from "@/components/CustomButton/CustomButton";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 
 const FONT_SEMIBOLD = "AlbertSans_600SemiBold";
 
@@ -36,6 +38,10 @@ export const DynamicFormModal = ({
   disabled = false,
   children,
 }: DynamicFormModalProps) => {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
+
   return (
     <Modal
       visible={visible}
@@ -44,7 +50,7 @@ export const DynamicFormModal = ({
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.header}>
@@ -53,9 +59,9 @@ export const DynamicFormModal = ({
             style={styles.backButton}
             hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
           >
-            <Ionicons name="arrow-back" size={26} color="#0F172A" />
+            <Ionicons name="arrow-back" size={26} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={[styles.title, { color: colors.tint }]}>{title}</Text>
           <View style={styles.placeholder} />
         </View>
 
@@ -68,10 +74,9 @@ export const DynamicFormModal = ({
           {children}
         </ScrollView>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { backgroundColor: colors.background }]}>
           <CustomButton
             title={buttonTitle}
-            variant="secondary"
             onPress={onConfirm}
             loading={loading}
             disabled={disabled}
@@ -86,7 +91,6 @@ export const DynamicFormModal = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   header: {
     flexDirection: "row",
@@ -102,7 +106,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontFamily: FONT_SEMIBOLD,
-    color: "#2B60AD",
     fontWeight: "600",
   },
   placeholder: {
@@ -121,6 +124,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: Platform.OS === "ios" ? 34 : 24,
     paddingTop: 16,
-    backgroundColor: "#FFFFFF",
   },
 });

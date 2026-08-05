@@ -7,6 +7,9 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
+import { useAppTheme } from "@/providers/AppThemeProvider";
+import Colors from "@/constants/Colors";
+
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
@@ -16,9 +19,13 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { colorScheme } = useAppTheme();
+  const isDark = colorScheme === "dark";
+  const colors = isDark ? Colors.dark : Colors.light;
+
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={["top", "left", "right"]}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Tabs
           screenOptions={{
             headerShown: false,
@@ -34,7 +41,7 @@ export default function TabLayout() {
 
             tabBarStyle: [
               styles.tabBar,
-              { marginBottom: Math.max(insets.bottom, 10) },
+              { marginBottom: Math.max(insets.bottom, 10), backgroundColor: colors.tabBar },
             ],
             tabBarItemStyle: styles.tabBarItem,
           }}
@@ -112,15 +119,12 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
   },
   container: {
     flex: 1,
     justifyContent: "space-between",
-    backgroundColor: "#FFFFFF",
   },
   tabBar: {
-    backgroundColor: "#2B60AD",
     borderRadius: 14,
     height: 65,
     width: "95%",

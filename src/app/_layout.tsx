@@ -15,7 +15,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 
-import { useColorScheme } from "@/components/useColorScheme";
+import { AppThemeProvider, useAppTheme } from "@/providers/AppThemeProvider";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -56,14 +56,43 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <AppThemeProvider>
+      <RootLayoutNav />
+    </AppThemeProvider>
+  );
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const { colorScheme } = useAppTheme();
+
+  const navigationTheme =
+    colorScheme === "dark"
+      ? {
+          ...DarkTheme,
+          colors: {
+            ...DarkTheme.colors,
+            background: "#0F172A",
+            card: "#111827",
+            text: "#E2E8F0",
+            border: "#1E293B",
+            primary: "#2C5BA2",
+          },
+        }
+      : {
+          ...DefaultTheme,
+          colors: {
+            ...DefaultTheme.colors,
+            background: "#F6F8FC",
+            card: "#FFFFFF",
+            text: "#0F172A",
+            border: "#E2E8F0",
+            primary: "#2C5BA2",
+          },
+        };
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={navigationTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />

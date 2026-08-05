@@ -13,7 +13,7 @@ import {
   ViewStyle,
 } from "react-native";
 
-export type CustomInputType = "text" | "image";
+export type CustomInputType = "text" | "image" | "search";
 
 export interface CustomInputProps extends Omit<TextInputProps, "style"> {
   type?: CustomInputType;
@@ -34,6 +34,7 @@ export interface CustomInputProps extends Omit<TextInputProps, "style"> {
 const COLOR_BLUE = "#0088FF";
 const COLOR_RED = "#FF2D55";
 const COLOR_GRAY = "#94A3B8";
+const COLOR_SEARCH_BG = "#2A5CA8"; // Color del fondo de búsqueda de la imagen
 const FONT_ALBERT_SANS_REGULAR = "AlbertSans_400Regular";
 const FONT_ALBERT_SANS_MEDIUM = "AlbertSans_500Medium";
 const FONT_ALBERT_SANS_SEMIBOLD = "AlbertSans_600SemiBold";
@@ -53,12 +54,12 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
       onFocus,
       onBlur,
       onChangeText,
-      placeholder,
+      placeholder = type === "search" ? "Buscar..." : undefined,
       secureTextEntry,
       imageUri,
       onImagePress,
       imageSize = 120,
-      allowSpaces = false,
+      allowSpaces = type === "search" ? true : false,
       maxLength = 50,
       ...textInputProps
     },
@@ -68,6 +69,7 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
     const [showPassword, setShowPassword] = useState(false);
 
     const isError = !!error;
+    const isSearch = type === "search";
 
     const sanitizeText = (text: string): string => {
       let sanitized = text;
@@ -102,6 +104,8 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
       setShowPassword((prev) => !prev);
     };
 
+    const effectiveLeftIcon = isSearch ? "search-outline" : leftIcon;
+
     const effectiveRightIcon = isPassword
       ? showPassword
         ? "eye-off-outline"
@@ -117,6 +121,8 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
       : isFocused
         ? COLOR_BLUE
         : COLOR_GRAY;
+
+    const contentColor = isSearch ? "#FFFFFF" : activeColor;
 
     if (type === "image") {
       return (
@@ -161,8 +167,15 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
 
     return (
       <View style={[styles.wrapper, containerStyle]}>
-        <View style={[styles.inputContainer, { borderColor: activeColor }]}>
-          {label && (
+        <View
+          style={[
+            styles.inputContainer,
+            isSearch
+              ? styles.searchInputContainer
+              : { borderColor: activeColor },
+          ]}
+        >
+          {label && !isSearch && (
             <View style={styles.labelWrapper}>
               <Text style={[styles.label, { color: activeColor }]}>
                 {label}
@@ -170,20 +183,20 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
             </View>
           )}
 
-          {leftIcon && (
+          {effectiveLeftIcon && (
             <Ionicons
-              name={leftIcon}
+              name={effectiveLeftIcon}
               size={20}
               style={styles.leftIcon}
-              color={activeColor}
+              color={contentColor}
             />
           )}
 
           <TextInput
             ref={ref}
-            style={[styles.input, { color: activeColor }, inputStyle]}
+            style={[styles.input, { color: contentColor }, inputStyle]}
             placeholder={placeholder}
-            placeholderTextColor={activeColor}
+            placeholderTextColor={isSearch ? "#FFFFFF99" : activeColor}
             secureTextEntry={isPassword ? !showPassword : secureTextEntry}
             textContentType={
               isPassword ? "password" : textInputProps.textContentType
@@ -196,7 +209,7 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
             autoCorrect={false}
             autoCapitalize="none"
             underlineColorAndroid="transparent"
-            selectionColor={activeColor}
+            selectionColor={contentColor}
             {...textInputProps}
           />
 
@@ -211,7 +224,7 @@ export const CustomInput = forwardRef<TextInput, CustomInputProps>(
                 name={effectiveRightIcon}
                 size={20}
                 style={styles.rightIcon}
-                color={activeColor}
+                color={contentColor}
               />
             </TouchableOpacity>
           )}
@@ -254,6 +267,11 @@ const styles = StyleSheet.create({
     height: 56,
     backgroundColor: "#ffffff",
     position: "relative",
+  },
+  searchInputContainer: {
+    backgroundColor: COLOR_SEARCH_BG,
+    borderWidth: 0,
+    borderRadius: 16,
   },
   labelWrapper: {
     position: "absolute",

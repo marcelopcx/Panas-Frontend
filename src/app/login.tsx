@@ -90,6 +90,7 @@ export default function LoginScreen() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      router.push("/(tabs)/chats");
     }, 2500);
   };
 

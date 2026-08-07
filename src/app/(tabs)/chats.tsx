@@ -1,7 +1,7 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +16,9 @@ import { NotificationDropdown } from "@/components/NotificationDropdown/Notifica
 import { Text, View } from "@/components/Themed";
 import Colors from "@/constants/Colors";
 import { useAppTheme } from "@/providers/AppThemeProvider";
+import { useAuth } from "@/providers/AuthProvider";
 import { ApiError, listChats } from "@/services/api";
+import { connectWs, userWsUrl } from "@/services/ws";
 import type { ChatListItem } from "@/types/api";
 import { avatarSource, formatChatTime } from "@/utils/format";
 
@@ -25,6 +27,7 @@ const FONT_REGULAR = "AlbertSans_400Regular";
 
 export default function ChatsScreen() {
   const router = useRouter();
+  const { token, user } = useAuth();
   const [chats, setChats] = useState<ChatListItem[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -33,19 +36,21 @@ export default function ChatsScreen() {
   const isDark = colorScheme === "dark";
   const colors = isDark ? Colors.dark : Colors.light;
 
-  const loadChats = useCallback(async () => {
-    setLoading(true);
+  const loadChats = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const items = await listChats();
       setChats(items);
     } catch (error) {
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : "No se pudieron cargar los chats.";
-      Alert.alert("Error", message);
+      if (!silent) {
+        const message =
+          error instanceof ApiError
+            ? error.message
+            : "No se pudieron cargar los chats.";
+        Alert.alert("Error", message);
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -54,6 +59,44 @@ export default function ChatsScreen() {
       void loadChats();
     }, [loadChats]),
   );
+
+  // WebSocket de usuario: actualiza la lista al recibir mensajes
+  useEffect(() => {
+    if (!token) return;
+
+    const conn = connectWs(userWsUrl(token), {
+      onMessage: (event) => {
+        if (event.type !== "chat_update" || !("id_chat" in event)) return;
+
+        const update = event;
+        setChats((prev) => {
+          const idx = prev.findIndex((c) => c.id_chat === update.id_chat);
+          const isMine =
+            user?.id_usuario != null &&
+            update.id_remitente === user.id_usuario;
+
+          if (idx === -1) {
+            // Chat nuevo o no cargado: refrescar lista
+            void loadChats(true);
+            return prev;
+          }
+
+          const current = prev[idx];
+          const next: ChatListItem = {
+            ...current,
+            last_message: update.last_message,
+            updated_at: update.updated_at,
+            unread: isMine ? current.unread : current.unread + 1,
+          };
+
+          const rest = prev.filter((_, i) => i !== idx);
+          return [next, ...rest];
+        });
+      },
+    });
+
+    return () => conn.close();
+  }, [token, user?.id_usuario, loadChats]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -132,12 +175,13 @@ export default function ChatsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  searchWrap: { paddingHorizontal: 16, marginBottom: 4 },
+  searchWrap: { paddingHorizontal: 16, paddingBottom: 8 },
   listContent: { paddingBottom: 24 },
-  empty: { alignItems: "center", marginTop: 48, gap: 12, paddingHorizontal: 32 },
+  empty: { alignItems: "center", paddingTop: 48, paddingHorizontal: 32, gap: 12 },
   emptyText: {
     fontFamily: FONT_REGULAR,
-    fontSize: 14,
+    fontSize: 15,
     textAlign: "center",
+    lineHeight: 22,
   },
 });

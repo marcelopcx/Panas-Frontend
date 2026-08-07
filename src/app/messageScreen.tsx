@@ -30,6 +30,7 @@ import {
   listMensajes,
   marcarChatLeido,
 } from "@/services/api";
+import { chatWsUrl, connectWs } from "@/services/ws";
 import type { Mensaje } from "@/types/api";
 import { avatarSource, formatMessageTime } from "@/utils/format";
 
@@ -61,7 +62,7 @@ export default function MessageScreen() {
   }>();
 
   const { colorScheme } = useAppTheme();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const isDark = colorScheme === "dark";
   const colors = isDark ? Colors.dark : Colors.light;
 
@@ -87,6 +88,18 @@ export default function MessageScreen() {
     }, 100);
   };
 
+  const appendMessage = useCallback(
+    (msg: Mensaje) => {
+      const ui = toUiMessage(msg, user?.id_usuario);
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === ui.id)) return prev;
+        return [...prev, ui];
+      });
+      scrollToBottom(true);
+    },
+    [user?.id_usuario],
+  );
+
   const loadMessages = useCallback(async () => {
     if (!chatId || Number.isNaN(chatId)) {
       setLoading(false);
@@ -95,7 +108,6 @@ export default function MessageScreen() {
     setLoading(true);
     try {
       const items = await listMensajes(chatId);
-      // API returns newest first → reverse for chat UI
       const ordered = [...items].reverse();
       setMessages(ordered.map((m) => toUiMessage(m, user?.id_usuario)));
       await marcarChatLeido(chatId);
@@ -114,6 +126,21 @@ export default function MessageScreen() {
   useEffect(() => {
     void loadMessages();
   }, [loadMessages]);
+
+  useEffect(() => {
+    if (!token || !chatId || Number.isNaN(chatId)) return;
+
+    const conn = connectWs(chatWsUrl(chatId, token), {
+      onMessage: (event) => {
+        if (event.type === "mensaje" && "mensaje" in event) {
+          appendMessage(event.mensaje as Mensaje);
+          void marcarChatLeido(chatId);
+        }
+      },
+    });
+
+    return () => conn.close();
+  }, [token, chatId, appendMessage]);
 
   useEffect(() => {
     const showEvent =
@@ -144,8 +171,7 @@ export default function MessageScreen() {
     setSending(true);
     try {
       const msg = await enviarMensaje(chatId, text);
-      setMessages((prev) => [...prev, toUiMessage(msg, user?.id_usuario)]);
-      scrollToBottom(true);
+      appendMessage(msg);
     } catch (error) {
       setMessageText(text);
       const message =
@@ -163,11 +189,7 @@ export default function MessageScreen() {
     setSending(true);
     try {
       const result = await enviarImagenChat(chatId, uri);
-      setMessages((prev) => [
-        ...prev,
-        toUiMessage(result.mensaje, user?.id_usuario),
-      ]);
-      scrollToBottom(true);
+      appendMessage(result.mensaje);
     } catch (error) {
       const message =
         error instanceof ApiError

@@ -1,5 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
-import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { Alert, Image, StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { CustomInput } from "@/components/CustomInput/CustomInput";
@@ -8,6 +9,13 @@ import { OptionItem } from "@/components/OptionItem/OptionItem";
 import { Text } from "@/components/Themed";
 import Colors from "@/constants/Colors";
 import { useAppTheme } from "@/providers/AppThemeProvider";
+import { useAuth } from "@/providers/AuthProvider";
+import { ApiError } from "@/services/api";
+import {
+  avatarSource,
+  PRIVACY_API_TO_UI,
+  PRIVACY_UI_TO_API,
+} from "@/utils/format";
 
 const FONT_SEMIBOLD = "AlbertSans_600SemiBold";
 
@@ -32,11 +40,20 @@ const sanitizeProfileName = (value: string) => {
 };
 
 export default function PerfilScreen() {
+  const router = useRouter();
   const { colorScheme, setColorScheme } = useAppTheme();
+  const {
+    profile,
+    logout,
+    updateProfile,
+    uploadProfileAvatar,
+    deleteAccount,
+    refreshProfile,
+  } = useAuth();
   const isDark = colorScheme === "dark";
   const colors = isDark ? Colors.dark : Colors.light;
 
-  const [name, setName] = useState("Jhon Doe");
+  const [name, setName] = useState(profile?.name ?? "");
   const [draftName, setDraftName] = useState(name);
   const [themePreference, setThemePreference] = useState<ThemePreference>(
     isDark ? "Oscuro" : "Claro",
@@ -44,17 +61,36 @@ export default function PerfilScreen() {
   const [draftThemePreference, setDraftThemePreference] =
     useState<ThemePreference>(isDark ? "Oscuro" : "Claro");
   const [privacyPreference, setPrivacyPreference] =
-    useState<PrivacyPreference>("Público");
+    useState<PrivacyPreference>(
+      (profile?.privacidad && PRIVACY_API_TO_UI[profile.privacidad]) ||
+        "Público",
+    );
   const [draftPrivacyPreference, setDraftPrivacyPreference] =
-    useState<PrivacyPreference>("Público");
+    useState<PrivacyPreference>(privacyPreference);
   const [photoPreference, setPhotoPreference] =
     useState<PhotoSource>("Galería");
   const [draftPhotoPreference, setDraftPhotoPreference] =
     useState<PhotoSource>("Galería");
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [draftPhotoUri, setDraftPhotoUri] = useState<string | null>(null);
+  const [photoUri, setPhotoUri] = useState<string | null>(
+    profile?.url_avatar ?? null,
+  );
+  const [draftPhotoUri, setDraftPhotoUri] = useState<string | null>(photoUri);
   const [draftAccountName, setDraftAccountName] = useState("");
   const [activeModal, setActiveModal] = useState<ProfileModalKey>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    void refreshProfile();
+  }, [refreshProfile]);
+
+  useEffect(() => {
+    if (!profile) return;
+    setName(profile.name);
+    setPhotoUri(profile.url_avatar ?? null);
+    setPrivacyPreference(
+      PRIVACY_API_TO_UI[profile.privacidad] ?? "Público",
+    );
+  }, [profile]);
 
   const openModal = (modal: Exclude<ProfileModalKey, null>) => {
     setActiveModal(modal);
@@ -141,12 +177,26 @@ export default function PerfilScreen() {
               />
             </View>
           ),
-          onConfirm: () => {
+          onConfirm: async () => {
             const nextName = sanitizeProfileName(draftName).trim();
-            if (nextName.length > 0) {
-              setName(nextName);
+            if (nextName.length === 0) {
+              closeModal();
+              return;
             }
-            closeModal();
+            setSaving(true);
+            try {
+              await updateProfile({ full_name: nextName });
+              setName(nextName);
+              closeModal();
+            } catch (error) {
+              const message =
+                error instanceof ApiError
+                  ? error.message
+                  : "No se pudo actualizar el nombre.";
+              Alert.alert("Error", message);
+            } finally {
+              setSaving(false);
+            }
           },
         };
 
@@ -209,10 +259,26 @@ export default function PerfilScreen() {
               </View>
             </View>
           ),
-          onConfirm: () => {
-            setPhotoUri(draftPhotoUri);
-            setPhotoPreference(draftPhotoPreference);
-            closeModal();
+          onConfirm: async () => {
+            setSaving(true);
+            try {
+              if (draftPhotoUri && draftPhotoUri !== profile?.url_avatar) {
+                const updated = await uploadProfileAvatar(draftPhotoUri);
+                setPhotoUri(updated.url_avatar ?? draftPhotoUri);
+              } else {
+                setPhotoUri(draftPhotoUri);
+              }
+              setPhotoPreference(draftPhotoPreference);
+              closeModal();
+            } catch (error) {
+              const message =
+                error instanceof ApiError
+                  ? error.message
+                  : "No se pudo actualizar la foto.";
+              Alert.alert("Error", message);
+            } finally {
+              setSaving(false);
+            }
           },
         };
 
@@ -327,9 +393,23 @@ export default function PerfilScreen() {
               </View>
             </View>
           ),
-          onConfirm: () => {
-            setPrivacyPreference(draftPrivacyPreference);
-            closeModal();
+          onConfirm: async () => {
+            setSaving(true);
+            try {
+              await updateProfile({
+                privacidad: PRIVACY_UI_TO_API[draftPrivacyPreference],
+              });
+              setPrivacyPreference(draftPrivacyPreference);
+              closeModal();
+            } catch (error) {
+              const message =
+                error instanceof ApiError
+                  ? error.message
+                  : "No se pudo guardar la privacidad.";
+              Alert.alert("Error", message);
+            } finally {
+              setSaving(false);
+            }
           },
         };
 
@@ -351,12 +431,16 @@ export default function PerfilScreen() {
                 <Text
                   style={[styles.infoCardText, { color: colors.textSecondary }]}
                 >
-                  Esta acción solo afecta la interfaz por ahora.
+                  Se cerrará tu sesión en este dispositivo.
                 </Text>
               </View>
             </View>
           ),
-          onConfirm: closeModal,
+          onConfirm: async () => {
+            await logout();
+            closeModal();
+            router.replace("/login");
+          },
         };
 
       case "account":
@@ -389,7 +473,7 @@ export default function PerfilScreen() {
                     { color: colors.text },
                   ]}
                 >
-                  Esta acción es irreversible en la interfaz.
+                  Esta acción es irreversible.
                 </Text>
                 <Text
                   style={[styles.infoCardText, { color: colors.textSecondary }]}
@@ -409,8 +493,24 @@ export default function PerfilScreen() {
               />
             </View>
           ),
-          onConfirm: closeModal,
-          disabled: draftAccountName.trim() !== name.trim(),
+          onConfirm: async () => {
+            if (draftAccountName.trim() !== name.trim()) return;
+            setSaving(true);
+            try {
+              await deleteAccount();
+              closeModal();
+              router.replace("/login");
+            } catch (error) {
+              const message =
+                error instanceof ApiError
+                  ? error.message
+                  : "No se pudo eliminar la cuenta.";
+              Alert.alert("Error", message);
+            } finally {
+              setSaving(false);
+            }
+          },
+          disabled: draftAccountName.trim() !== name.trim() || saving,
         };
 
       default:
@@ -436,16 +536,10 @@ export default function PerfilScreen() {
         <View
           style={[styles.avatarContainer, { backgroundColor: colors.surface }]}
         >
-          {photoUri ? (
-            <Image source={{ uri: photoUri }} style={styles.avatarImage} />
-          ) : (
-            <View
-              style={[
-                styles.avatarPlaceholder,
-                { backgroundColor: colors.border },
-              ]}
-            />
-          )}
+          <Image
+            source={avatarSource(photoUri)}
+            style={styles.avatarImage}
+          />
         </View>
         <Text style={[styles.profileName, { color: colors.text }]}>{name}</Text>
       </View>
@@ -496,7 +590,8 @@ export default function PerfilScreen() {
           title={modalConfig.title}
           buttonTitle={modalConfig.buttonTitle}
           onConfirm={modalConfig.onConfirm}
-          disabled={modalConfig.disabled}
+          loading={saving}
+          disabled={Boolean(modalConfig.disabled) || saving}
         >
           {modalConfig.content}
         </DynamicFormModal>

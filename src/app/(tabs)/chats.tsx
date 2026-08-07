@@ -1,248 +1,143 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { FlatList, ImageSourcePropType, StyleSheet } from "react-native";
+import React, { useCallback, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+} from "react-native";
 
 import { ChatItem } from "@/components/ChatItem/ChatItem";
 import { CustomInput } from "@/components/CustomInput/CustomInput";
 import { Header } from "@/components/Header/Header";
 import { NotificationDropdown } from "@/components/NotificationDropdown/NotificationDropdown";
 import { Text, View } from "@/components/Themed";
-import { useAppTheme } from "@/providers/AppThemeProvider";
 import Colors from "@/constants/Colors";
+import { useAppTheme } from "@/providers/AppThemeProvider";
+import { ApiError, listChats } from "@/services/api";
+import type { ChatListItem } from "@/types/api";
+import { avatarSource, formatChatTime } from "@/utils/format";
 
 const FONT_SEMIBOLD = "AlbertSans_600SemiBold";
 const FONT_REGULAR = "AlbertSans_400Regular";
 
-export type Chat = {
-  id: string;
-  name: string;
-  lastMessage: string;
-  updatedAt: string;
-  unread: number;
-  avatarId: "user1" | "user2" | "user3";
-  avatar: ImageSourcePropType;
-};
-
-const CHATS_DATA: Chat[] = [
-  {
-    id: "1",
-    name: "Jhon Doe",
-    lastMessage: "El que abre mucho la boca busca que se la rompan...",
-    updatedAt: "10:30pm",
-    unread: 5,
-    avatarId: "user1",
-    avatar: require("../../../assets/images/user1.jpg"),
-  },
-  {
-    id: "2",
-    name: "Mariana López",
-    lastMessage: "El que abre mucho la boca busca que se la rompan...",
-    updatedAt: "10:30pm",
-    unread: 5,
-    avatarId: "user2",
-    avatar: require("../../../assets/images/user2.webp"),
-  },
-  {
-    id: "3",
-    name: "Carlos Pérez",
-    lastMessage: "El que abre mucho la boca busca que se la rompan...",
-    updatedAt: "10:30pm",
-    unread: 5,
-    avatarId: "user3",
-    avatar: require("../../../assets/images/user3.jpg"),
-  },
-  {
-    id: "4",
-    name: "Sofía Ramírez",
-    lastMessage: "El que abre mucho la boca busca que se la rompan...",
-    updatedAt: "10:30pm",
-    unread: 5,
-    avatarId: "user1",
-    avatar: require("../../../assets/images/user1.jpg"),
-  },
-  {
-    id: "5",
-    name: "Jhon Doe",
-    lastMessage: "El que abre mucho la boca busca que se la rompan...",
-    updatedAt: "10:30pm",
-    unread: 5,
-    avatarId: "user2",
-    avatar: require("../../../assets/images/user2.webp"),
-  },
-  {
-    id: "6",
-    name: "Ana Torres",
-    lastMessage: "El que abre mucho la boca busca que se la rompan...",
-    updatedAt: "10:30pm",
-    unread: 5,
-    avatarId: "user3",
-    avatar: require("../../../assets/images/user3.jpg"),
-  },
-  {
-    id: "7",
-    name: "Miguel Rojas",
-    lastMessage: "El que abre mucho la boca busca que se la rompan...",
-    updatedAt: "10:30pm",
-    unread: 5,
-    avatarId: "user1",
-    avatar: require("../../../assets/images/user1.jpg"),
-  },
-  {
-    id: "8",
-    name: "Valentina Castro",
-    lastMessage: "El que abre mucho la boca busca que se la rompan...",
-    updatedAt: "10:30pm",
-    unread: 5,
-    avatarId: "user2",
-    avatar: require("../../../assets/images/user2.webp"),
-  },
-  {
-    id: "9",
-    name: "Andrés Gómez",
-    lastMessage: "El que abre mucho la boca busca que se la rompan...",
-    updatedAt: "10:30pm",
-    unread: 5,
-    avatarId: "user3",
-    avatar: require("../../../assets/images/user3.jpg"),
-  },
-];
-
 export default function ChatsScreen() {
   const router = useRouter();
-  const [chats] = useState<Chat[]>(CHATS_DATA);
+  const [chats, setChats] = useState<ChatListItem[]>([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
   const [notifVisible, setNotifVisible] = useState(false);
   const { colorScheme } = useAppTheme();
   const isDark = colorScheme === "dark";
   const colors = isDark ? Colors.dark : Colors.light;
 
-  const toggleNotif = () => {
-    setNotifVisible((prev) => !prev);
-  };
+  const loadChats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const items = await listChats();
+      setChats(items);
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "No se pudieron cargar los chats.";
+      Alert.alert("Error", message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const closeNotif = () => {
-    setNotifVisible(false);
-  };
-
-  const handlePressChat = (chat: Chat) => {
-    router.push({
-      pathname: "/messageScreen",
-      params: {
-        id: chat.id,
-        name: chat.name,
-        updatedAt: chat.updatedAt,
-        avatarId: chat.avatarId,
-      },
-    });
-  };
-
-  const handleNewChat = () => {
-    //router.push("/chats/new");
-  };
-
-  const renderItem = ({ item }: { item: Chat }) => (
-    <ChatItem
-      avatarSource={item.avatar}
-      name={item.name}
-      lastMessage={item.lastMessage}
-      updatedAt={item.updatedAt}
-      unreadCount={item.unread}
-      onPress={() => handlePressChat(item)}
-    />
+  useFocusEffect(
+    useCallback(() => {
+      void loadChats();
+    }, [loadChats]),
   );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return chats;
+    return chats.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.last_message.toLowerCase().includes(q),
+    );
+  }, [chats, query]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
         logoSource={require("../../../assets/images/logo blue.png")}
-        onNotificationPress={toggleNotif}
+        onNotificationPress={() => setNotifVisible((v) => !v)}
       />
-      <NotificationDropdown visible={notifVisible} onClose={closeNotif} />
+      <NotificationDropdown
+        visible={notifVisible}
+        onClose={() => setNotifVisible(false)}
+      />
 
-      <View style={[styles.contentInput, { backgroundColor: colors.background }]}>
-        <CustomInput type="search" placeholder="Buscar chats..." />
+      <View style={styles.searchWrap}>
+        <CustomInput
+          type="search"
+          placeholder="Buscar chats…"
+          value={query}
+          onChangeText={setQuery}
+        />
       </View>
 
-      <FlatList
-        data={chats}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={[
-          styles.list,
-          chats.length === 0 && styles.emptyListContainer,
-        ]}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={[styles.emptyContainer, { backgroundColor: colors.background }]}>
-            <View style={[styles.iconCircle, { backgroundColor: colors.iconCircle }]}>
-              <FontAwesome name="comment-o" size={36} color={colors.tabIconDefault} />
+      {loading ? (
+        <ActivityIndicator color={colors.tint} style={{ marginTop: 24 }} />
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => String(item.id_chat)}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <FontAwesome
+                name="comments"
+                size={40}
+                color={colors.tabIconDefault}
+              />
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                Aún no tienes chats. Acepta amistades para empezar.
+              </Text>
             </View>
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>No hay chats aún</Text>
-            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-              Inicia una conversación para empezar.
-            </Text>
-          </View>
-        }
-      />
+          }
+          renderItem={({ item }) => (
+            <ChatItem
+              name={item.name}
+              lastMessage={item.last_message}
+              updatedAt={formatChatTime(item.updated_at)}
+              unreadCount={item.unread}
+              avatarSource={avatarSource(item.url_avatar)}
+              onPress={() =>
+                router.push({
+                  pathname: "/messageScreen",
+                  params: {
+                    id: String(item.id_chat),
+                    name: item.name,
+                    updatedAt: formatChatTime(item.updated_at),
+                    avatarUrl: item.url_avatar ?? "",
+                  },
+                })
+              }
+            />
+          )}
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  contentInput: {
-    paddingHorizontal: 8,
-  },
-  list: {
-    paddingTop: 8,
-  },
-  emptyListContainer: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 32,
-  },
-  iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontFamily: FONT_SEMIBOLD,
-    marginBottom: 6,
-    textAlign: "center",
-    fontWeight: "700",
-  },
-  emptySubtitle: {
-    fontSize: 14,
+  container: { flex: 1 },
+  searchWrap: { paddingHorizontal: 16, marginBottom: 4 },
+  listContent: { paddingBottom: 24 },
+  empty: { alignItems: "center", marginTop: 48, gap: 12, paddingHorizontal: 32 },
+  emptyText: {
     fontFamily: FONT_REGULAR,
+    fontSize: 14,
     textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 16,
-  },
-  newChatButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#2B60AD",
-    borderRadius: 14,
-    height: 48,
-    paddingHorizontal: 20,
-  },
-  newChatButtonText: {
-    color: "#fff",
-    fontSize: 15,
-    fontFamily: FONT_SEMIBOLD,
-    fontWeight: "700",
   },
 });

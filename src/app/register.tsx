@@ -2,6 +2,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,7 +18,9 @@ import { CustomButton } from "@/components/CustomButton/CustomButton";
 import { CustomDivider } from "@/components/CustomDivider/CustomDivider";
 import { CustomInput } from "@/components/CustomInput/CustomInput";
 import { useAppTheme } from "@/providers/AppThemeProvider";
+import { useAuth } from "@/providers/AuthProvider";
 import Colors from "@/constants/Colors";
+import { ApiError } from "@/services/api";
 
 const COLOR_BLUE = "#2B60AD";
 const COLOR_TEXT_BLUE = "#2B60AD";
@@ -27,6 +30,7 @@ const FONT_ALBERT_SANS_BOLD = "AlbertSans_700Bold";
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { register } = useAuth();
   const { colorScheme } = useAppTheme();
   const isDark = colorScheme === "dark";
   const colors = isDark ? Colors.dark : Colors.light;
@@ -157,7 +161,7 @@ export default function RegisterScreen() {
     setConfirmPasswordError(validateConfirmPassword(confirmPassword));
   };
 
-  const handleCreateAccount = () => {
+  const handleCreateAccount = async () => {
     const nextFullNameError = validateFullName(fullName);
     const nextEmailError = validateEmail(email);
     const nextPasswordError = validatePassword(password);
@@ -182,9 +186,23 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await register({
+        email,
+        password,
+        full_name: fullName,
+        avatarUri: profileImage,
+      });
+      router.replace("/(tabs)/chats");
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "No se pudo crear la cuenta. Intenta de nuevo.";
+      Alert.alert("Error", message);
+    } finally {
       setLoading(false);
-    }, 2500);
+    }
   };
 
   const handleLogin = () => {

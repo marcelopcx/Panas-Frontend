@@ -23,7 +23,11 @@
         "backgroundColor": "#1a1a2e"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -38,6 +42,15 @@
           "photosPermission": "La app necesita acceso a tus fotos para cambiar la foto de perfil.",
           "cameraPermission": "La app necesita acceso a la cámara para tomar una foto de perfil."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logo blue.png",
+          "color": "#2C5BA2",
+          "defaultChannel": "default",
+          "sounds": []
+        }
       ]
     ],
     "expo-router": {
@@ -45,6 +58,13 @@
     },
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "812f4916-2a17-43a1-974a-acabcecf9923"
+      }
+    },
+    "owner": "marceloperoz0"
   }
 }

@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,7 +18,9 @@ import { CustomDivider } from "@/components/CustomDivider/CustomDivider";
 import { CustomInput } from "@/components/CustomInput/CustomInput";
 import { HeaderLogo } from "@/components/HeaderLogo/HeaderLogo";
 import { useAppTheme } from "@/providers/AppThemeProvider";
+import { useAuth } from "@/providers/AuthProvider";
 import Colors from "@/constants/Colors";
+import { ApiError } from "@/services/api";
 
 const COLOR_BLUE = "#2B60AD";
 const COLOR_TEXT_BLUE = "#2B60AD";
@@ -27,6 +30,7 @@ const FONT_ALBERT_SANS_BOLD = "AlbertSans_700Bold";
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
@@ -79,7 +83,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const nextEmailError = validateEmail(email);
     const nextPasswordError = validatePassword(password);
 
@@ -93,10 +97,18 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
-    setTimeout(() => {
+    try {
+      await login(email, password);
+      router.replace("/(tabs)/chats");
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "No se pudo iniciar sesión. Revisa tu conexión.";
+      Alert.alert("Error", message);
+    } finally {
       setLoading(false);
-      router.push("/(tabs)/chats");
-    }, 2500);
+    }
   };
 
   const handleForgotPassword = () => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -10,32 +10,18 @@ import {
   UIManager,
   View,
 } from "react-native";
+
 import { NotificationContainer } from "@/components/NotificationContainer/NotificationContainer";
 import { NotificationItem } from "@/components/NotificationItem/NotificationItem";
-
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import {
+  eliminarNotificacion,
+  listNotificaciones,
+} from "@/services/api";
+import type { Notificacion } from "@/types/api";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: "1",
-    message: "Nuevo mensaje de Andrés Arrias",
-  },
-  {
-    id: "2",
-    message: "Tu publicación fue vista por 5 personas",
-  },
-  {
-    id: "3",
-    message: "Nueva conexión recibida de Laura Gómez",
-  },
-  {
-    id: "4",
-    message: "Recordatorio: reunión mañana a las 10am",
-  },
-];
 
 if (UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -48,57 +34,72 @@ export const NotificationDropdown = ({
   visible: boolean;
   onClose: () => void;
 }) => {
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notificacion[]>([]);
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
   const colors = isDark ? Colors.dark : Colors.light;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  const load = useCallback(async () => {
+    try {
+      const data = await listNotificaciones(false);
+      setNotifications(data.items);
+    } catch {
+      setNotifications([]);
+    }
+  }, []);
+
   useEffect(() => {
     if (visible) {
+      void load();
       slideAnim.setValue(-10);
       fadeAnim.setValue(0);
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 250,
+          duration: 220,
           useNativeDriver: true,
         }),
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 250,
+          duration: 220,
           useNativeDriver: true,
         }),
       ]).start();
     }
-  }, [visible, slideAnim, fadeAnim]);
+  }, [visible, load, slideAnim, fadeAnim]);
 
-  const handleCloseItem = (id: string) => {
+  const handleCloseItem = async (id: number) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setNotifications((prev) => {
-      const next = prev.filter((n) => n.id !== id);
-      if (next.length === 0) {
-        onClose();
-      }
-      return next;
-    });
+    setNotifications((prev) =>
+      prev.filter((n) => n.id_notificacion !== id),
+    );
+    try {
+      await eliminarNotificacion(id);
+    } catch {
+      // ignore
+    }
   };
 
+  useEffect(() => {
+    if (visible && notifications.length === 0) {
+      // keep open briefly; user can dismiss overlay
+    }
+  }, [visible, notifications.length]);
+
+  if (!visible) return null;
+
   return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType="none"
-      onRequestClose={onClose}
-    >
+    <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.backdrop}>
+        <View style={styles.overlay}>
           <TouchableWithoutFeedback>
             <Animated.View
               style={[
                 styles.dropdown,
                 {
+                  backgroundColor: colors.surface,
                   opacity: fadeAnim,
                   transform: [{ translateY: slideAnim }],
                 },
@@ -106,15 +107,21 @@ export const NotificationDropdown = ({
             >
               <NotificationContainer>
                 {notifications.length === 0 ? (
-                  <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                    No tienes notificaciones
+                  <Text
+                    style={{
+                      color: colors.textSecondary,
+                      padding: 16,
+                      textAlign: "center",
+                    }}
+                  >
+                    No hay notificaciones
                   </Text>
                 ) : (
-                  notifications.map((notif) => (
+                  notifications.map((item) => (
                     <NotificationItem
-                      key={notif.id}
-                      message={notif.message}
-                      onClose={() => handleCloseItem(notif.id)}
+                      key={item.id_notificacion}
+                      message={item.mensaje}
+                      onClose={() => void handleCloseItem(item.id_notificacion)}
                     />
                   ))
                 )}
@@ -128,20 +135,17 @@ export const NotificationDropdown = ({
 };
 
 const styles = StyleSheet.create({
-  backdrop: {
+  overlay: {
     flex: 1,
-    backgroundColor: "rgba(15, 23, 42, 0.4)",
+    backgroundColor: "rgba(0,0,0,0.25)",
+    paddingTop: 72,
+    alignItems: "flex-end",
+    paddingRight: 12,
   },
   dropdown: {
-    position: "absolute",
-    top: 60,
-    right: 10,
-    width: SCREEN_WIDTH - 20,
-  },
-  emptyText: {
-    fontSize: 14,
-    fontFamily: "AlbertSans_400Regular",
-    textAlign: "center",
-    paddingVertical: 12,
+    width: Math.min(SCREEN_WIDTH - 32, 340),
+    borderRadius: 16,
+    overflow: "hidden",
+    maxHeight: 360,
   },
 });

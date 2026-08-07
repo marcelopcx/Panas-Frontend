@@ -1,5 +1,12 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  ImageSourcePropType,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
@@ -10,6 +17,7 @@ const FONT_REGULAR = "AlbertSans_400Regular";
 export type FriendNotificationItemProps = {
   name: string;
   message: string;
+  avatarSource?: ImageSourcePropType;
   onAccept?: () => void;
   onReject?: () => void;
 };
@@ -17,6 +25,7 @@ export type FriendNotificationItemProps = {
 export const FriendNotificationItem = ({
   name,
   message,
+  avatarSource,
   onAccept,
   onReject,
 }: FriendNotificationItemProps) => {
@@ -26,7 +35,11 @@ export const FriendNotificationItem = ({
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background, borderColor: colors.borderSubtle }]}>
-      <View style={[styles.avatar, { backgroundColor: colors.border }]} />
+      {avatarSource ? (
+        <Image source={avatarSource} style={styles.avatarImage} />
+      ) : (
+        <View style={[styles.avatar, { backgroundColor: colors.border }]} />
+      )}
 
       <View style={styles.contentContainer}>
         <Text style={[styles.nameText, { color: colors.text }]} numberOfLines={1}>
@@ -68,6 +81,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   avatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    marginRight: 10,
+  },
+  avatarImage: {
     width: 38,
     height: 38,
     borderRadius: 19,

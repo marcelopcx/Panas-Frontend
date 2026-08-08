@@ -4,14 +4,14 @@
     "slug": "panas",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo blue.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "panas",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/logo blue.png",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1a1a2e"
+      "backgroundColor": "#2C5BA2"
     },
     "ios": {
       "supportsTablet": true
@@ -19,9 +19,10 @@
     "android": {
       "package": "com.panas.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo blue.png",
-        "backgroundColor": "#1a1a2e"
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#2C5BA2"
       },
+      "versionCode": 2,
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -32,7 +33,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/logo blue.png"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router",
@@ -46,7 +47,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/logo blue.png",
+          "icon": "./assets/images/icon.png",
           "color": "#2C5BA2",
           "defaultChannel": "default",
           "sounds": []

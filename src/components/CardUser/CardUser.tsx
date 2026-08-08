@@ -43,14 +43,48 @@ export const CardUser = ({
   const colors = isDark ? Colors.dark : Colors.light;
 
   const position = useRef(new Animated.ValueXY()).current;
+  const onSwipeLeftRef = useRef(onSwipeLeft);
+  const onSwipeRightRef = useRef(onSwipeRight);
+  const swipingRef = useRef(false);
+
+  onSwipeLeftRef.current = onSwipeLeft;
+  onSwipeRightRef.current = onSwipeRight;
+
+  const resetPosition = () => {
+    Animated.spring(position, {
+      toValue: { x: 0, y: 0 },
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const forceSwipe = (direction: "left" | "right") => {
+    if (swipingRef.current) return;
+    swipingRef.current = true;
+    const x = direction === "right" ? SCREEN_WIDTH : -SCREEN_WIDTH;
+    Animated.timing(position, {
+      toValue: { x, y: 0 },
+      duration: SWIPE_OUT_DURATION,
+      useNativeDriver: false,
+    }).start(() => {
+      if (direction === "right") {
+        onSwipeRightRef.current();
+      } else {
+        onSwipeLeftRef.current();
+      }
+    });
+  };
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (event, gesture) => {
+      onMoveShouldSetPanResponder: (_, gesture) =>
+        Math.abs(gesture.dx) > 4 || Math.abs(gesture.dy) > 4,
+      onPanResponderMove: (_event, gesture) => {
+        if (swipingRef.current) return;
         position.setValue({ x: gesture.dx, y: gesture.dy });
       },
-      onPanResponderRelease: (event, gesture) => {
+      onPanResponderRelease: (_event, gesture) => {
+        if (swipingRef.current) return;
         if (gesture.dx > SWIPE_THRESHOLD) {
           forceSwipe("right");
         } else if (gesture.dx < -SWIPE_THRESHOLD) {
@@ -61,28 +95,6 @@ export const CardUser = ({
       },
     }),
   ).current;
-
-  const forceSwipe = (direction: "left" | "right") => {
-    const x = direction === "right" ? SCREEN_WIDTH : -SCREEN_WIDTH;
-    Animated.timing(position, {
-      toValue: { x, y: 0 },
-      duration: SWIPE_OUT_DURATION,
-      useNativeDriver: false,
-    }).start(() => {
-      if (direction === "right") {
-        onSwipeRight();
-      } else {
-        onSwipeLeft();
-      }
-    });
-  };
-
-  const resetPosition = () => {
-    Animated.spring(position, {
-      toValue: { x: 0, y: 0 },
-      useNativeDriver: false,
-    }).start();
-  };
 
   const getCardStyle = () => {
     if (!isFirst) {
